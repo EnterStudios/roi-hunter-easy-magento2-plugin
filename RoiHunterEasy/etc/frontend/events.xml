@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="checkout_cart_product_add_after">
+        <observer name="added_to_cart_observer" instance="BusinessFactory\RoiHunterEasy\Observer\AddedToCartObserver" />
+    </event>
+    <event name="checkout_onepage_controller_success_action">
+        <observer name="checkout_observer" instance="BusinessFactory\RoiHunterEasy\Observer\CheckoutObserver" />
+    </event>
+    <event name="multishipping_checkout_controller_success_action">
+        <observer name="checkout_observer" instance="BusinessFactory\RoiHunterEasy\Observer\CheckoutObserver" />
+    </event>
+</config>

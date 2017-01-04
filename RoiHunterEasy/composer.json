@@ -1,0 +1,22 @@
+{
+  "name": "businessfactory/roi_hunter_easy",
+  "description": "Module for quick creation of dynamic remarketing ads.",
+  "require": {
+    "php": "~5.5.0|~5.6.0|~7.0.0"
+  },
+  "suggest": {
+    "magento/module-webapi": "1.0.0-beta"
+  },
+  "type": "magento2-module",
+  "version": "1.0.0",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "autoload": {
+    "files": [ "registration.php" ],
+    "psr-4": {
+      "BusinessFactory\\RoiHunterEasy\\": ""
+    }
+  }
+}

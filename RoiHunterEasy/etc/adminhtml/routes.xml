@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:App/etc/routes.xsd">
+    <router id="admin">
+        <route id="roi_hunter_easy_admin_backend" frontName="roi_hunter_easy_admin_backend">
+            <module name="BusinessFactory_RoiHunterEasy"/>
+        </route>
+        <route id="roi_hunter_easy_admin_reset" frontName="roi_hunter_easy_admin_reset">
+            <module name="BusinessFactory_RoiHunterEasy" before="Magento_Backend" />
+        </route>
+    </router>
+</config>

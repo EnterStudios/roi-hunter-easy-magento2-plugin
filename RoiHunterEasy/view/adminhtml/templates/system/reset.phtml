@@ -1,0 +1,54 @@
+<?php
+/**
+ * Copyright © 2016 MageWorx. All rights reserved.
+ * See LICENSE.txt for license details.
+ */
+?>
+<?php /* @var $block BusinessFactory\RoiHunterEasy\Block\System\Reset */ ?>
+
+<script>
+    // http://magento.stackexchange.com/questions/130056/how-to-create-a-button-in-magento-2-configuration-section
+
+    require([
+        'jquery',
+        'Magento_Ui/js/modal/confirm'
+    ], function (jQuery, magConfirm) {
+        jQuery('#reset_button').click(function () {
+            magConfirm({
+                title: 'Roi Hunter Easy',
+                content: 'Do you really want to delete all plugin data?',
+                actions: {
+                    confirm: function () {
+                        var resultBox = jQuery('#collect_message_span');
+                        new Ajax.Request('<?php echo $block->getAjaxUrl() ?>', {
+                            parameters: {},
+                            loaderArea: true,
+                            asynchronous: true,
+                            onCreate: function () {
+                                resultBox.text('loading ...');
+                            },
+                            onSuccess: function (response) {
+                                console.log(response);
+                                if (response.responseJSON) {
+                                    resultBox.text(response.responseJSON);
+                                } else {
+                                    resultBox.text(response.responseText);
+                                }
+                            },
+                            onFailure: function () {
+                                resultBox.text('Request failed.');
+                            }
+                        });
+                    },
+                    cancel: function () {
+                    },
+                    always: function () {
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+<?php echo $block->getButtonHtml() ?>
+<span id="collect_message_span">(All current plugin data will be lost)</span>
