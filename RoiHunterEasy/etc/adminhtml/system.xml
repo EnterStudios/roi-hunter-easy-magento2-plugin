@@ -20,6 +20,10 @@
                     <frontend_model>BusinessFactory\RoiHunterEasy\Block\System\Reset</frontend_model>
                     <label>Restore Factory Settings: </label>
                 </field>
+                <field id="RoiHunterEasy_restoreFeed" type="button" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <frontend_model>BusinessFactory\RoiHunterEasy\Block\System\ResetFeed</frontend_model>
+                    <label>Restore Feed Generation: </label>
+                </field>
             </group>
         </section>
     </system>

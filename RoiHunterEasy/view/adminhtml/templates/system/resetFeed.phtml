@@ -1,0 +1,36 @@
+<?php /* @var $block BusinessFactory\RoiHunterEasy\Block\System\ResetFeed */ ?>
+
+<script>
+    // http://magento.stackexchange.com/questions/130056/how-to-create-a-button-in-magento-2-configuration-section
+
+    require([
+        'jquery',
+        'Magento_Ui/js/modal/confirm'
+    ], function (jQuery) {
+        jQuery('#reset_feed_button').click(function () {
+            var resultBox = jQuery('#reset_feed_text_area');
+            new Ajax.Request('<?php echo $block->getAjaxUrl() ?>', {
+                parameters: {},
+                loaderArea: true,
+                asynchronous: true,
+                onCreate: function () {
+                    resultBox.text('loading ...');
+                },
+                onSuccess: function (response) {
+                    console.log(response);
+                    if (response.responseJSON) {
+                        resultBox.text(response.responseJSON);
+                    } else {
+                        resultBox.text(response.responseText);
+                    }
+                },
+                onFailure: function () {
+                    resultBox.text('Request failed.');
+                }
+            });
+        });
+    });
+</script>
+
+<?php echo $block->getButtonHtml() ?>
+<span id="reset_feed_text_area">(Recover feed generation from an error)</span>

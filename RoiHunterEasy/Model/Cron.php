@@ -227,7 +227,8 @@ class Cron
             $total_execution_time = ($total_time_end - $total_time_start);
             $this->loggerMy->info('total execution time: ' . $total_execution_time);
         } catch (Exception $e) {
-            throwException($e);
+            $this->loggerMy->info($e);
+            throw $e;
         }
         return true;
     }
