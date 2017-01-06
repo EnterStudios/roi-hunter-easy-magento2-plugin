@@ -6,10 +6,8 @@ use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
 use Exception;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
 class State extends Action
@@ -17,7 +15,6 @@ class State extends Action
 
     /** @var JsonFactory */
     private $jsonResultFactory;
-    private $scopeConfig;
     private $storeManager;
 
     /**
@@ -34,14 +31,12 @@ class State extends Action
     public function __construct(
         Context $context,
         JsonFactory $jsonResultFactory,
-        ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManager,
         Logger $logger,
         MainItemFactory $mainItemFactory
     )
     {
         $this->jsonResultFactory = $jsonResultFactory;
-        $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
         $this->loggerMy = $logger;
         $this->mainItemFactory = $mainItemFactory;
@@ -142,10 +137,5 @@ class State extends Action
             $this->loggerMy->info($this->getRequest());
             $resultPage->setHttpResponseCode(500);
         }
-    }
-
-    private function getConfigValue($configPath)
-    {
-        return $this->scopeConfig->getValue($configPath, ScopeInterface::SCOPE_STORE);
     }
 }
