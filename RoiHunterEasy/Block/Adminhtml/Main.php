@@ -5,7 +5,6 @@ use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Model\UrlInterface;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Store\Model\ScopeInterface;
 
@@ -17,16 +16,13 @@ class Main extends Template
      */
     private $mainItemFactory;
 
-    private $scopeConfig;
 
     public function __construct(
         Context $context,
-        ScopeConfigInterface $scopeConfig,
         MainItemFactory $mainItemFactory,
         array $data = []
     )
     {
-        $this->scopeConfig = $scopeConfig;
         $this->mainItemFactory = $mainItemFactory;
         parent::__construct($context, $data);
     }
@@ -80,7 +76,7 @@ class Main extends Template
 
     private function getConfigValue($configPath)
     {
-        return $this->scopeConfig->getValue($configPath, ScopeInterface::SCOPE_STORE);
+        return $this->_scopeConfig->getValue($configPath, ScopeInterface::SCOPE_STORE);
     }
 
     public function getMainItemEntry()

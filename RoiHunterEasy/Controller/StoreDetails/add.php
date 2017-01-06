@@ -6,7 +6,6 @@ use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
 use Exception;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
-use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Filesystem;
@@ -20,7 +19,6 @@ class Add extends Action
      * @var  \Magento\Framework\View\Result\Page
      */
     private $jsonResultFactory;
-    private $scopeConfig;
     private $storeManager;
 
     /**
@@ -40,14 +38,12 @@ class Add extends Action
         Context $context,
         Logger $logger,
         JsonFactory $jsonResultFactory,
-        ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManager,
         MainItemFactory $mainItemFactory,
         Filesystem $filesystem
     )
     {
         $this->jsonResultFactory = $jsonResultFactory;
-        $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
         $this->loggerMy = $logger;
         $this->mainItemFactory = $mainItemFactory;
