@@ -35,7 +35,7 @@ ROI Hunter Easy marketing extension is available in **EN**. Support is also avai
 \* Extension do not cover your Google Adwords Ad Spend. 
 
 
-# Intallation
+# Installation
 There are two possible ways for extension installation:
 
 ## Magento Component Manager
@@ -48,7 +48,8 @@ If you can't open Component Manager check for a solution at https://github.com/m
 ## Manual installation
 Manual installation is faster than installation by Component Manager. Also your shop won't be offline during it. On the other hand it requires admin access to your Magento server.
 
-Simply download the latest stable source code and copy them to the following folder on your server:  `<magento_installation_path>/app/code/BusinessFactory/RoiHunterEasy/<source_code>`
+Simply download the latest stable source code and copy them to the following folder on your server: `<magento_installation_path>/app/code/`. The final structure will look like this:
+[![source_code_path.png](https://s30.postimg.org/guisj1an5/source_code_path.png)](https://postimg.org/image/agtpfs5r1/)
 
 After that, you must run below command to register the extension:  
 `php <magento_installation_path>/bin/magento setup:upgrade`
