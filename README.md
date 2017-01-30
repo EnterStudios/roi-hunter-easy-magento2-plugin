@@ -36,6 +36,9 @@ ROI Hunter Easy marketing extension is available in **EN**. Support is also avai
 
 
 # Installation
+**Attention!**  
+**Google Remarketing is available only in these countries**: Argentina, Australia, Austria, Belgium, Brazil, Canada, Chile, Colombia, Czech Republic, Denmark, France, Germany, India, Ireland, Italy, Japan, Malaysia, Mexico, Netherlands, New Zealand, Norway, Phillipines, Poland, Portugal, Russia, Singapore, South Africa, Spain, Sweeden, Switzerland, Turkey, United Arab Emirates, United Kingdom and United States.
+
 There are two possible ways for extension installation:
 
 ## Magento Component Manager
