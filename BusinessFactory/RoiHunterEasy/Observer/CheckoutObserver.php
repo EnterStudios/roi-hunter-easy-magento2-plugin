@@ -6,7 +6,6 @@
 
 namespace BusinessFactory\RoiHunterEasy\Observer;
 
-use Exception;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Event\Observer;
@@ -83,7 +82,7 @@ class CheckoutObserver implements ObserverInterface
             $this->customerSession->setMyValue($checkout_remarketing_base64);
 
             return $this;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->loggerMy->info($e);
             return $this;
         }

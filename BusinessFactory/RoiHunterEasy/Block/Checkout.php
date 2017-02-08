@@ -8,7 +8,6 @@
 namespace BusinessFactory\RoiHunterEasy\Block;
 
 use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
-use Exception;
 use Magento\Customer\Model\Session;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
@@ -65,7 +64,7 @@ class Checkout extends Template
                 $this->logger->info("Conversion ID not found during " . __METHOD__);
                 return null;
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->logger->info(__METHOD__ . " exception.");
             $this->logger->info($exception);
             return null;
@@ -116,7 +115,7 @@ class Checkout extends Template
                     return parent::_toHtml();
                 }
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->logger->info(__METHOD__ . " exception.");
             $this->logger->info($exception);
         }

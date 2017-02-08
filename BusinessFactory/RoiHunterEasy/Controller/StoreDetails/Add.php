@@ -3,7 +3,6 @@ namespace BusinessFactory\RoiHunterEasy\Controller\StoreDetails;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
 use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
-use Exception;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
@@ -104,7 +103,7 @@ class Add extends Action
                 // If everything ok, return data
                 $resultPage->setData($mainItemCollection->getLastItem()->getData());
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->loggerMy->info($exception);
             $this->loggerMy->info($this->getRequest());
             $resultPage->setHttpResponseCode(500);
@@ -209,7 +208,7 @@ class Add extends Action
             $resultPage->setData([
                 "data" => $requestData
             ]);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->loggerMy->info($exception);
             $this->loggerMy->info($request);
             $resultPage->setHttpResponseCode(500);
@@ -238,7 +237,7 @@ class Add extends Action
             } else {
                 $this->loggerMy->info("ERROR: Cannot create verification file. Missing filename.");
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->loggerMy->info($exception);
         }
     }

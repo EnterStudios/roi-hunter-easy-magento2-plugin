@@ -58,7 +58,7 @@ class ResetFeed extends Field
      */
     public function getAjaxUrl()
     {
-        return $this->getUrl('roi_hunter_easy_admin_reset/system/resetFeed');
+        return $this->getUrl('roi_hunter_easy_admin_reset/system/ResetFeed');
     }
 
     /**

@@ -2,7 +2,6 @@
 namespace BusinessFactory\RoiHunterEasy\Model;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
-use Exception;
 use Magento\Catalog\Model\CategoryFactory;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\Product\Visibility;
@@ -112,13 +111,13 @@ class Cron
                 $this->loggerMy->info("Feed generation already running.");
                 return false;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->loggerMy->info($e);
 
             // Try delete file also when exception occurred.
             try {
                 $this->fileMy->deleteFile($path);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $this->loggerMy->info($e);
             }
             return false;
@@ -226,7 +225,7 @@ class Cron
             $total_time_end = microtime(true);
             $total_execution_time = ($total_time_end - $total_time_start);
             $this->loggerMy->info('total execution time: ' . $total_execution_time);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->loggerMy->info($e);
             throw $e;
         }

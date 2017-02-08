@@ -9,7 +9,6 @@ namespace BusinessFactory\RoiHunterEasy\Block\Category\View;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
 use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
-use Exception;
 use Magento\Catalog\Block\Category\View;
 use Magento\Catalog\Helper\Category;
 use Magento\Catalog\Model\Layer\Resolver;
@@ -79,7 +78,7 @@ class Analytics extends View
                 $count++;
             }
             return json_encode($productIds);
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->logger->info(__METHOD__ . " exception.");
             $this->logger->info($exception);
             return null;
@@ -100,7 +99,7 @@ class Analytics extends View
                 $this->logger->info("Conversion ID not found during " . __METHOD__);
                 return null;
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->logger->info(__METHOD__ . " exception.");
             $this->logger->info($exception);
             return null;
