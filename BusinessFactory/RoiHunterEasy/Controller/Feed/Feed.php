@@ -2,7 +2,6 @@
 namespace BusinessFactory\RoiHunterEasy\Controller\Feed;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
-use Exception;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Filesystem\DirectoryList;
@@ -32,7 +31,7 @@ class Feed extends Action
         $this->loggerMy = $logger;
         $this->fileFactory = $fileFactory;
         $this->jsonResultFactory = $jsonResultFactory;
-        return parent::__construct($context);
+        parent::__construct($context);
     }
 
     public function execute()
@@ -53,7 +52,7 @@ class Feed extends Action
                 $contentType = 'application/octet-stream',
                 $contentLength = null
             );
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->loggerMy->info($exception);
             $this->loggerMy->info($this->getRequest());
 

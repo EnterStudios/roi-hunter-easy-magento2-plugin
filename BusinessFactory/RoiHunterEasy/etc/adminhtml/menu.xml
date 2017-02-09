@@ -7,7 +7,7 @@
              module="BusinessFactory_RoiHunterEasy"
              sortOrder="900"
              resource="BusinessFactory_RoiHunterEasy::roi_hunter_easy"
-             action="roi_hunter_easy_admin_backend/index/index"
+             action="roi_hunter_easy_admin_backend/Index/Index"
         />
 
         <!--<add id="DynamicAds::second_level_example"-->

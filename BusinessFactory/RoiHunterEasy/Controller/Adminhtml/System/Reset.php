@@ -5,7 +5,6 @@ namespace BusinessFactory\RoiHunterEasy\Controller\Adminhtml\System;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Exception;
 use Zend\Http\Client;
 use Zend\Http\Headers;
 use Zend\Http\Request;
@@ -96,7 +95,7 @@ class Reset extends Action
                     return $response->setData("Remote reset failed. However new registration should be alright.");
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->loggerMy->info($e);
             return $response->setData("Reset failed. Please check logs and contact support at easy@roihunter.com.");
         }

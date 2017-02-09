@@ -5,7 +5,6 @@ namespace BusinessFactory\RoiHunterEasy\Controller\Adminhtml\System;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\Result\JsonFactory;
-use Exception;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Filesystem\Driver\File;
 use Magento\Framework\Filesystem;
@@ -75,7 +74,7 @@ class ResetFeed extends Action
                 $this->fileMy->deleteFile($path);
                 return $response->setData("Reset completed.");
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->loggerMy->info($e);
             return $response->setData("Restore feed failed. Please check logs and contact support at easy@roihunter.com.");
         }

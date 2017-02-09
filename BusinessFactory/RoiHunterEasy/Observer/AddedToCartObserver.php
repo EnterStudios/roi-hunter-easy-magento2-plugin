@@ -6,7 +6,6 @@
 
 namespace BusinessFactory\RoiHunterEasy\Observer;
 
-use Exception;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
@@ -50,7 +49,7 @@ class AddedToCartObserver implements ObserverInterface
             $product_remarketing_json = json_encode($product_remarketing_data);
             $product_remarketing_base64 = base64_encode($product_remarketing_json);
             $this->customerSession->setMyValue($product_remarketing_base64);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->loggerMy->info($e);
         }
     }

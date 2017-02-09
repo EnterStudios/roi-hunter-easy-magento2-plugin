@@ -3,7 +3,6 @@ namespace BusinessFactory\RoiHunterEasy\Controller\Cron;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
 use BusinessFactory\RoiHunterEasy\Model\Cron;
-use Exception;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
@@ -96,7 +95,7 @@ class Index extends Action
             } else {
                 $resultPage->setData('Feed not generated.');
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->loggerMy->info($exception);
             $this->loggerMy->info($this->getRequest());
             $resultPage->setHttpResponseCode(500);

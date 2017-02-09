@@ -3,7 +3,6 @@
 namespace BusinessFactory\RoiHunterEasy\Block\Product\View;
 
 use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
-use Exception;
 use Magento\Catalog\Block\Product\Context;
 use Magento\Catalog\Block\Product\View;
 use Magento\Catalog\Helper\Product;
@@ -73,7 +72,7 @@ class Analytics extends View
                 $this->logger->info("Conversion ID not found during " . __METHOD__);
                 return null;
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->logger->info(__METHOD__ . " exception.");
             $this->logger->info($exception);
             return null;

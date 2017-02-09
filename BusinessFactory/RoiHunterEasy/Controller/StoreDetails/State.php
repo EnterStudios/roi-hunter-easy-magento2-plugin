@@ -3,7 +3,6 @@ namespace BusinessFactory\RoiHunterEasy\Controller\StoreDetails;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
 use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
-use Exception;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
@@ -82,7 +81,7 @@ class State extends Action
             } else {
                 $resultPage->setData($mainItemCollection->getLastItem()->getCreationState());
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->loggerMy->info($exception);
             $this->loggerMy->info($this->getRequest());
             $resultPage->setHttpResponseCode(500);
@@ -132,7 +131,7 @@ class State extends Action
                     "data" => $requestData
                 ]);
             }
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             $this->loggerMy->info($exception);
             $this->loggerMy->info($this->getRequest());
             $resultPage->setHttpResponseCode(500);
