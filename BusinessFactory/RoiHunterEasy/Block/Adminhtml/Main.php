@@ -6,7 +6,6 @@ use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Model\UrlInterface;
 use Magento\Framework\App\ObjectManager;
-use Magento\Framework\App\State;
 use Magento\Store\Model\ScopeInterface;
 
 class Main extends Template
@@ -51,7 +50,6 @@ class Main extends Template
     public function getDevelopmentMode() {
         /** @var \Magento\Framework\App\ObjectManager $om */
         $om = ObjectManager::getInstance();
-        /** @return State */
         $state = $om->get('Magento\Framework\App\State');
         /** @var bool $isDeveloperMode */
         return $state->getMode();

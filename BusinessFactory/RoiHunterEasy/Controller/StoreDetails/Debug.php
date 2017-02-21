@@ -6,7 +6,6 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\App\ObjectManager;
-use Magento\Framework\App\State;
 use Magento\Framework\Controller\Result\JsonFactory;
 
 use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
@@ -89,7 +88,6 @@ class Debug extends Action
 
             /** @var \Magento\Framework\App\ObjectManager $om */
             $om = ObjectManager::getInstance();
-            /** @return State */
             $state = $om->get('Magento\Framework\App\State');
 
             $resultData = $_SERVER;
