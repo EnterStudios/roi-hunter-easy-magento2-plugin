@@ -47,6 +47,14 @@ class Main extends Template
         return $this->_storeManager->getStore()->getBaseCurrencyCode();
     }
 
+    public function getDevelopmentMode() {
+        /** @var \Magento\Framework\App\ObjectManager $om */
+        $om = ObjectManager::getInstance();
+        $state = $om->get('Magento\Framework\App\State');
+        /** @var bool $isDeveloperMode */
+        return $state->getMode();
+    }
+
     public function getStoreLanguage()
     {
         /** @var \Magento\Framework\ObjectManagerInterface $om */

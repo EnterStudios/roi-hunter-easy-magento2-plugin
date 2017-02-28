@@ -30,6 +30,7 @@
     var storeCurrency = "<?php echo $block->getStoreCurrency(); ?>";
     var storeLanguage = "<?php echo $block->getStoreLanguage(); ?>";
     var storeCountry = "<?php echo $block->getStoreCountry(); ?>";
+    var magentoMode = "<?php echo $block->getDevelopmentMode(); ?>";
 
     var customerId = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getCustomerId() : null); ?>";
     var accessToken = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getAccessToken() : null); ?>";
@@ -56,6 +57,7 @@
                 "storeCurrency": storeCurrency,
                 "storeLanguage": storeLanguage,
                 "storeCountry": storeCountry,
+                "magentoMode": magentoMode,
 
                 // Database part
                 "customerId": customerId,
