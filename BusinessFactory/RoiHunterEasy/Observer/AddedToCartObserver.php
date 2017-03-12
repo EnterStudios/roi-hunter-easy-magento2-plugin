@@ -38,13 +38,31 @@ class AddedToCartObserver implements ObserverInterface
     public function execute(Observer $observer)
     {
         try {
-            // get product
-            $product = $observer->getEvent()->getData('product');
+            // get product and variants
+//            $product = $observer->getEvent()->getData('product');
+            $quoteItem = $observer->getEvent()->getData('quote_item');
+            $quoteItemVariant = null;
+
+            if (count($quoteItem->getChildren()) > 0) {
+                $tempArray = $quoteItem->getChildren();
+                $quoteItemVariant = reset($tempArray);
+            }
+
+//            $this->loggerMy->debug("QuoteItem data:", $quoteItemVariant->getData());
+//            $this->loggerMy->debug("Event data:", $observer->getEvent()->getData());
+//            $this->loggerMy->debug("quote methods", get_class_methods($quoteItem));
+
+            if ($quoteItem->getProductType() === "configurable" && $quoteItemVariant !== null) {
+                $id = "mag_" . $quoteItem->getProductId() . "_" . $quoteItemVariant->getProductId();
+            } else {
+                $id = "mag_" . $quoteItem->getProductId();
+            }
+
             // set product as session data
             $product_remarketing_data = [
                 'pagetype' => 'cart',
-                'id' => $product->getSku(),
-                'price' => $product->getFinalPrice()
+                'id' => $id,
+                'price' => $quoteItem->getProduct()->getFinalPrice()
             ];
             $product_remarketing_json = json_encode($product_remarketing_data);
             $product_remarketing_base64 = base64_encode($product_remarketing_json);

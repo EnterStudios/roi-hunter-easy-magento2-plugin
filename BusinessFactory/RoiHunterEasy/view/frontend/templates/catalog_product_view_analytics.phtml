@@ -1,21 +1,21 @@
-<?php /* @var $block \BusinessFactory\RoiHunterEasy\Block\Product\View\Analytics */?>
+<?php /* @var $block \BusinessFactory\RoiHunterEasy\Block\Product\View\Analytics */ ?>
 
 
 <?php
-    $_product = $block->getProduct();
-    $_prodName = null;
-    $_prodSku = null;
-    $_prodId = null;
-    $_prodPrice = null;
+$_product = $block->getProduct();
+$_prodName = null;
+$_prodSku = null;
+$_prodId = null;
+$_prodPrice = null;
 
-    if ($_product) {
-        $_prodName = $_product->getName();
-        $_prodSku = $_product->getSku();
-        $_prodId = $_product->getId();
-        $_prodPrice = $_product->getFinalPrice();
-        // Regular price without discount
-        // $_prodPrice = $_product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue();
-    }
+if ($_product) {
+    $_prodName = $_product->getName();
+    $_prodSku = $_product->getSku();
+    $_prodId = "mag_" . $_product->getId();
+    $_prodPrice = $_product->getFinalPrice();
+    // Regular price without discount
+    // $_prodPrice = $_product->getPriceInfo()->getPrice('regular_price')->getAmount()->getValue();
+}
 ?>
 
 <!-- Google Code for Remarketing Tag -->
@@ -27,10 +27,11 @@ categories. See more information and instructions on how to setup the tag on: ht
     /* <![CDATA[ */
     var google_conversion_id = <?php echo $block->getConversionId() ?>;
     var google_custom_params = {
-        ecomm_prodid: '<?php echo $_prodSku ?>',
+        ecomm_prodid: '<?php echo $_prodId ?>',
         ecomm_pagetype: 'product',
         ecomm_totalvalue: <?php echo $_prodPrice ?>,
-    };;
+    };
+    ;
     var google_remarketing_only = true;
     /* ]]> */
 </script>
@@ -38,6 +39,7 @@ categories. See more information and instructions on how to setup the tag on: ht
 </script>
 <noscript>
     <div style="display:inline;">
-        <img height="1" width="1" style="border-style:none;" alt="" src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/<?php echo $block->getConversionId() ?>/?value=0&amp;guid=ON&amp;script=0"/>
+        <img height="1" width="1" style="border-style:none;" alt=""
+             src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/<?php echo $block->getConversionId() ?>/?value=0&amp;guid=ON&amp;script=0"/>
     </div>
 </noscript>

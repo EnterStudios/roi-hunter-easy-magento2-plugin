@@ -266,6 +266,9 @@ class Cron
     {
         $xmlWriter->startElement('item');
 
+        $xmlWriter->writeElement('g:id', "mag_" . $_product->getId());
+        $xmlWriter->writeElement('g:display_ads_id', "mag_" . $_product->getId());
+
         // process common attributes
         $this->writeParentProductAttributes($_product, $xmlWriter);
         // process advanced attributes
@@ -342,12 +345,10 @@ class Cron
      */
     private function writeChildProductAttributes($_product, $xmlWriter)
     {
-        $xmlWriter->writeElement('g:id', $_product->getId());
         $xmlWriter->writeElement('g:image_link', $this->getImageUrl($_product));
 
 //        $this->loggerMy->debug('gtin: ' . $_product->getEan());
         $xmlWriter->writeElement('g:mpn', $_product->getSku());
-        $xmlWriter->writeElement('g:display_ads_id', $_product->getSku());
         if (strlen($_product->getEan()) > 7) {
             $xmlWriter->writeElement('g:gtin', $_product->getEan());
         }
@@ -415,7 +416,10 @@ class Cron
         foreach ($_childProducts as $_childProduct) {
             $xmlWriter->startElement('item');
 
-            $xmlWriter->writeElement('g:item_group_id', $_product->getSku());
+            // ID belongs to the child product's ID to make this product unique
+            $xmlWriter->writeElement('g:id', "mag_" . $_product->getId() . "_" . $_childProduct->getId());
+            $xmlWriter->writeElement('g:item_group_id', "mag_" . $_product->getId());
+            $xmlWriter->writeElement('g:display_ads_id', "mag_" . $_product->getId() . "_" . $_childProduct->getId());
 
             // process common attributes
             $this->writeParentProductAttributes($_product, $xmlWriter);

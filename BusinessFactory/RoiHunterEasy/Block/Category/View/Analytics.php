@@ -63,15 +63,17 @@ class Analytics extends View
         try {
             $products = $this->getCurrentCategory()
                 ->getProductCollection()
-                ->addAttributeToSelect('sku')
+                ->addAttributeToSelect('id')
                 ->load();
+//                ->addAttributeToSelect('sku')
+
 
             // slice array not to list all the products
             $limit = 10;
             $count = 0;
             $productIds = [];
             foreach ($products as $product) {
-                array_push($productIds, $product->getSku());
+                array_push($productIds, 'mag_' . $product->getId());
                 if (count($productIds) >= $limit) {
                     break;
                 }
