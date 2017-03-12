@@ -1,7 +1,7 @@
 <?php /** @var $block \BusinessFactory\RoiHunterEasy\Block\AddedToCart **/ ?>
 
 <?php
-    $_prodSku = $block->getProdId();
+    $_prodId = $block->getProdId();
     $_prodPrice = $block->getProdPrice();
 ?>
 
@@ -14,7 +14,7 @@ categories. See more information and instructions on how to setup the tag on: ht
     /* <![CDATA[ */
     var google_conversion_id = <?php echo $block->getConversionId() ?>;
     var google_custom_params = {
-        ecomm_prodid: '<?php echo $_prodSku ?>',
+        ecomm_prodid: '<?php echo $_prodId ?>',
         ecomm_pagetype: 'cart',
         ecomm_totalvalue: <?php echo $_prodPrice ?>,
     };

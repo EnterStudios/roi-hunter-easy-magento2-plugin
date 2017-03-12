@@ -1,7 +1,7 @@
-<?php /** @var $block \BusinessFactory\RoiHunterEasy\Block\Checkout **/ ?>
+<?php /** @var $block \BusinessFactory\RoiHunterEasy\Block\Checkout * */ ?>
 
 <?php
-$_prodSku = $block->getProdId();
+$_prodIds = $block->getProdId();
 $_prodPrice = $block->getProdPrice();
 ?>
 
@@ -14,7 +14,7 @@ categories. See more information and instructions on how to setup the tag on: ht
     /* <![CDATA[ */
     var google_conversion_id = <?php echo $block->getConversionId() ?>;
     var google_custom_params = {
-        ecomm_prodid: <?php echo $_prodSku ?>,
+        ecomm_prodid: <?php echo $_prodIds ?>,
         ecomm_pagetype: 'purchase',
         ecomm_totalvalue: <?php echo $_prodPrice ?>,
     };
@@ -25,7 +25,8 @@ categories. See more information and instructions on how to setup the tag on: ht
 </script>
 <noscript>
     <div style="display:inline;">
-        <img height="1" width="1" style="border-style:none;" alt="" src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/<?php echo $block->getConversionId() ?>/?value=0&amp;guid=ON&amp;script=0"/>
+        <img height="1" width="1" style="border-style:none;" alt=""
+             src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/<?php echo $block->getConversionId() ?>/?value=0&amp;guid=ON&amp;script=0"/>
     </div>
 </noscript>
 

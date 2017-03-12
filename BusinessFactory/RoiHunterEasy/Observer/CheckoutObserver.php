@@ -59,6 +59,8 @@ class CheckoutObserver implements ObserverInterface
 
             $conversionValue = 0;
             $productIds = [];
+            $parentItemIdToProductIdMap = [];
+            $configurableChildItems = [];
 
             $this->collection->addFieldToFilter('entity_id', ['in' => $orderIds]);
 
@@ -66,10 +68,35 @@ class CheckoutObserver implements ObserverInterface
             foreach ($this->collection as $order) {
                 $conversionValue += $order->getBaseGrandTotal();
 
-                $products = $order->getAllVisibleItems();
-                foreach ($products as $product) {
-                    array_push($productIds, $product->getSku());
+                // returns all order items
+                // configurable items are separated to two items - one simple with parent_item_id and one configurable with item_id
+                $items = $order->getAllItems();
+                foreach ($items as $item) {
+                    $parent_item_id = $item->getParentItemId();
+                    $product_type = $item->getProductType();
+
+                    if ($parent_item_id === null) {
+                        if ($product_type === "simple" || $product_type === "downloadable") {
+                            // simple product - write directly to the result IDs array
+                            array_push($productIds, "mag_" . $item->getProductId());
+                        } else if ($product_type === "configurable") {
+                            // configurable parent product
+                            // create map of parent IDS : parent objects
+                            $parentItemIdToProductIdMap[$item['item_id']] = $item['product_id'];
+                        } else {
+                            $this->loggerMy->info("Unknown product type: " . $product_type);
+                        }
+                    } else {
+                        // configurable child product
+                        array_push($configurableChildItems, $item);
+                    }
                 }
+            }
+
+            // iterate over children items a find parent item in the map
+            foreach ($configurableChildItems as $item) {
+                $id = "mag_" . $parentItemIdToProductIdMap[$item["parent_item_id"]] . "_" . $item["product_id"];
+                array_push($productIds, $id);
             }
 
             $checkout_remarketing_data = [

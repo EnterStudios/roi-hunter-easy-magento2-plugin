@@ -1,6 +1,6 @@
 <?php /* @var $block \BusinessFactory\RoiHunterEasy\Block\Adminhtml\Main */ ?>
 
-<!--"http://localhost:3000"    "http://magento.roihunter.com/" -->
+<!--"http://localhost:3000"    "//magento.roihunter.com/" -->
 <iframe src="//magento.roihunter.com/"
         scrolling="yes"
         frameBorder="0"
@@ -21,9 +21,6 @@
 <p>Store url: ?php echo $block->getStoreBaseUrl()?></p>
 -->
 
-
-<div id="loadingMessage">Loading...</div>
-
 <script>
     var storeUrl = "<?php echo $block->getStoreBaseUrl(); ?>";
     var storeName = "<?php echo $block->getStoreName(); ?>";
@@ -43,33 +40,39 @@
 
 
     var iFrame = document.getElementById('RoiHunterEasyIFrame');
-    var loadingMessageEl = document.getElementById('loadingMessage');
 
     iFrame.addEventListener('load', function () {
-        console.log('hiding Loader');
-        loadingMessageEl.style.display = 'none';
+        setTimeout(function(){
+            console.log('hiding Loader');
 
-        // pass base url to React iframe fro future API calls to this site
-        iFrame.contentWindow.postMessage({
-                "type": "roihunter_magento_plugin",
-                "storeUrl": storeUrl,
-                "storeName": storeName,
-                "storeCurrency": storeCurrency,
-                "storeLanguage": storeLanguage,
-                "storeCountry": storeCountry,
-                "magentoMode": magentoMode,
+            // pass basic Magento data to iFrame
+            iFrame.contentWindow.postMessage({
+                    "type": "roihunter_magento_plugin",
+                    "storeUrl": storeUrl,
+                    "storeName": storeName,
+                    "storeCurrency": storeCurrency,
+                    "storeLanguage": storeLanguage,
+                    "storeCountry": storeCountry,
+                    "storeMode": magentoMode,
 
-                // Database part
-                "customerId": customerId,
-                "accessToken": accessToken,
-                "clientToken": clientToken,
-                "managedMerchants": managedMerchants,
-                "adultOriented": adultOriented,
-                "status": status,
-                "errors": errors,
-                "creationState": creationState
-            }, '*'
-        );
+                    // Database part
+                    "customerId": customerId,
+                    "accessToken": accessToken,
+                    "clientToken": clientToken,
+                    "managedMerchants": managedMerchants,
+                    "adultOriented": adultOriented,
+                    "status": status,
+                    "errors": errors,
+                    "creationState": creationState
+
+//                    "checkUrl": "http://openshop.bfdev.cz/roihuntereasy/storedetails/checks"
+//                    "feedUrl": "http://weird_feedUrl",
+//                    "callbackUrl": "http://weird_callbackUrl",
+//                    "stateUrl": "http://weird_stateUrl",
+
+                }, '*'
+            );
+        }, 1000);
     });
 </script>
 

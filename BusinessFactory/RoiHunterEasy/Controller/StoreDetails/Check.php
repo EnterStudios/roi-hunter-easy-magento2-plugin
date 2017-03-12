@@ -44,7 +44,7 @@ class Check extends Action
         $resultPage = $this->jsonResultFactory->create();
 
         $resultPage->setHeader('Access-Control-Allow-Origin', '*', true);
-        $resultPage->setHeader('Access-Control-Allow-Methods', 'GET', true);
+        $resultPage->setHeader('Access-Control-Allow-Methods', 'OPTIONS,GET,POST', true);
         $resultPage->setHeader('Access-Control-Max-Age', '60', true);
         $resultPage->setHeader('Access-Control-Allow-Headers', 'X-Authorization', true);
 
