@@ -7,6 +7,7 @@ use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Model\UrlInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\Module\ModuleListInterface;
 
 class Main extends Template
 {
@@ -15,21 +16,24 @@ class Main extends Template
      * @var MainItemFactory
      */
     private $mainItemFactory;
-
+    protected $_moduleList;
 
     public function __construct(
         Context $context,
         MainItemFactory $mainItemFactory,
+        ModuleListInterface $moduleList,
         array $data = []
     )
     {
         $this->mainItemFactory = $mainItemFactory;
+        $this->_moduleList = $moduleList;
+
         parent::__construct($context, $data);
     }
 
     public function getStoreBaseUrl()
     {
-        return $this->_storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_WEB);
+        return $this->_storeManager->getStore()->getBaseUrl();
     }
 
     public function getStoreName()
@@ -80,6 +84,11 @@ class Main extends Template
         } else {
             return "US";
         }
+    }
+
+    public function getPluginVersion()
+    {
+        return $this->_moduleList->getOne('BusinessFactory_RoiHunterEasy')['setup_version'];
     }
 
     private function getConfigValue($configPath)

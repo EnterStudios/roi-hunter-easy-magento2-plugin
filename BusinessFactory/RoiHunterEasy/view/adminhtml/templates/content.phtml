@@ -1,96 +1,84 @@
 <?php /* @var $block \BusinessFactory\RoiHunterEasy\Block\Adminhtml\Main */ ?>
 
+<script>
+    function iFrameLoad() {
+        var storeUrl = "<?php echo $block->getStoreBaseUrl(); ?>";
+        var storeName = "<?php echo $block->getStoreName(); ?>";
+        var storeCurrency = "<?php echo $block->getStoreCurrency(); ?>";
+        var storeLanguage = "<?php echo $block->getStoreLanguage(); ?>";
+        var storeCountry = "<?php echo $block->getStoreCountry(); ?>";
+        var magentoMode = "<?php echo $block->getDevelopmentMode(); ?>";
+        var pluginVersion = "magento2_" + "<?php echo $block->getPluginVersion(); ?>";
+
+        var customerId = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getCustomerId() : null); ?>";
+        var accessToken = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getAccessToken() : null); ?>";
+        var clientToken = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getClientToken() : null); ?>";
+        var managedMerchants = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getManagedMerchants() : null); ?>";
+        var adultOriented = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getAdultOriented() : null); ?>";
+        var status = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getStatus() : null); ?>";
+        var errors = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getErrors() : null); ?>";
+        var creationState = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getCreationState() : null); ?>";
+
+        console.log("mode: " + magentoMode);
+
+        // pass basic Magento data to iFrame
+        var iFrame = document.getElementById('RoiHunterEasyIFrame');
+        iFrame.contentWindow.postMessage({
+                "type": "roihunter_magento_plugin",
+                "storeUrl": storeUrl,
+                "storeName": storeName,
+                "storeCurrency": storeCurrency,
+                "storeLanguage": storeLanguage,
+                "storeCountry": storeCountry,
+                "storeMode": magentoMode,
+                "pluginVersion": pluginVersion,
+
+                // Database part
+                "customerId": customerId,
+                "accessToken": accessToken,
+                "clientToken": clientToken,
+                "managedMerchants": managedMerchants,
+                "adultOriented": adultOriented,
+                "status": status,
+                "errors": errors,
+                "creationState": creationState
+
+//                ,"demoMode": true
+//                ,"checkUrl": "http://openshop.bfdev.cz/roihuntereasy/storedetails/checka"
+//                ,"intercomState":"hidden"
+//                    "feedUrl": "http://weird_feedUrl",
+//                    "callbackUrl": "http://weird_callbackUrl",
+//                    "stateUrl": "http://weird_stateUrl",E
+
+            }, '*'
+        );
+
+        // Create IE + others compatible event handler
+        var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+        var eventer = window[eventMethod];
+        var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+
+        // Listen to message from child window
+        eventer(messageEvent, function (e) {
+            if (e.data.type === "roihunter_magento_plugin_height") {
+//            Change size of iFrame to correspond new height of content
+//            console.log("new height: " + e.data.height);
+                document.getElementById('RoiHunterEasyIFrame').style.height = e.data.height + 'px';
+            } else {
+//            console.log("Unknown message event", e);
+            }
+        }, false);
+    }
+</script>
+
 <!--"http://localhost:3000"    "//magento.roihunter.com/" -->
 <iframe src="//magento.roihunter.com/"
+        id="RoiHunterEasyIFrame"
         scrolling="yes"
         frameBorder="0"
         allowfullscreen
         align="center"
-        style="width: 100%"
-        id="RoiHunterEasyIFrame">
+        onload="iFrameLoad()"
+        style="width: 100%; min-height: 500px">
     <p>Your browser does not support iFrames.</p>
 </iframe>
-
-<!--
-<p>MainItem data: ?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->toString() : "Empty"); ?></p>
-<p>AccessToken data: ?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getAccessToken() : "No token"); ?></p>
-<p>Creation status: ?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getCreationState() : "No status"); ?></p>
-<p>Store currency: ?php echo $block->getStoreCurrency()?></p>
-<p>Store language: ?php echo $block->getStoreLanguage()?></p>
-<p>Store country: ?php echo $block->getStoreCountry()?></p>
-<p>Store url: ?php echo $block->getStoreBaseUrl()?></p>
--->
-
-<script>
-    var storeUrl = "<?php echo $block->getStoreBaseUrl(); ?>";
-    var storeName = "<?php echo $block->getStoreName(); ?>";
-    var storeCurrency = "<?php echo $block->getStoreCurrency(); ?>";
-    var storeLanguage = "<?php echo $block->getStoreLanguage(); ?>";
-    var storeCountry = "<?php echo $block->getStoreCountry(); ?>";
-    var magentoMode = "<?php echo $block->getDevelopmentMode(); ?>";
-
-    var customerId = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getCustomerId() : null); ?>";
-    var accessToken = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getAccessToken() : null); ?>";
-    var clientToken = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getClientToken() : null); ?>";
-    var managedMerchants = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getManagedMerchants() : null); ?>";
-    var adultOriented = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getAdultOriented() : null); ?>";
-    var status = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getStatus() : null); ?>";
-    var errors = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getErrors() : null); ?>";
-    var creationState = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getCreationState() : null); ?>";
-
-
-    var iFrame = document.getElementById('RoiHunterEasyIFrame');
-
-    iFrame.addEventListener('load', function () {
-        setTimeout(function(){
-            console.log('hiding Loader');
-
-            // pass basic Magento data to iFrame
-            iFrame.contentWindow.postMessage({
-                    "type": "roihunter_magento_plugin",
-                    "storeUrl": storeUrl,
-                    "storeName": storeName,
-                    "storeCurrency": storeCurrency,
-                    "storeLanguage": storeLanguage,
-                    "storeCountry": storeCountry,
-                    "storeMode": magentoMode,
-
-                    // Database part
-                    "customerId": customerId,
-                    "accessToken": accessToken,
-                    "clientToken": clientToken,
-                    "managedMerchants": managedMerchants,
-                    "adultOriented": adultOriented,
-                    "status": status,
-                    "errors": errors,
-                    "creationState": creationState
-
-//                    "checkUrl": "http://openshop.bfdev.cz/roihuntereasy/storedetails/checks"
-//                    "feedUrl": "http://weird_feedUrl",
-//                    "callbackUrl": "http://weird_callbackUrl",
-//                    "stateUrl": "http://weird_stateUrl",
-
-                }, '*'
-            );
-        }, 1000);
-    });
-</script>
-
-<script>
-    // Create IE + others compatible event handler
-    var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
-    var eventer = window[eventMethod];
-    var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
-
-    // Listen to message from child window
-    eventer(messageEvent, function (e) {
-        if (e.data.type === "roihunter_magento_plugin_height") {
-//            Change size of iFrame to correspond new height of content
-//            console.log("new height: " + e.data.height);
-            document.getElementById('RoiHunterEasyIFrame').style.height = e.data.height + 'px';
-        } else {
-//            console.log("Unknown message event", e);
-        }
-    }, false);
-
-</script>

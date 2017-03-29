@@ -7,7 +7,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Controller\Result\JsonFactory;
-
+use Magento\Framework\Module\ModuleListInterface;
 use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
 
 class Debug extends Action
@@ -27,16 +27,20 @@ class Debug extends Action
      */
     private $mainItemFactory;
 
+    protected $_moduleList;
+
     public function __construct(
         Context $context,
         JsonFactory $jsonResultFactory,
         MainItemFactory $mainItemFactory,
+        ModuleListInterface $moduleList,
         Logger $logger
     )
     {
         $this->jsonResultFactory = $jsonResultFactory;
         $this->mainItemFactory = $mainItemFactory;
         $this->loggerMy = $logger;
+        $this->_moduleList = $moduleList;
 
         parent::__construct($context);
     }
@@ -93,6 +97,14 @@ class Debug extends Action
             $resultData = $_SERVER;
             $resultData['Magento_Mode'] = $state->getMode();
             $resultData['Php_Version'] = phpversion();
+
+            // Magento version
+            $om = ObjectManager::getInstance();
+            $productMetadata = $om->get('Magento\Framework\App\ProductMetadataInterface');
+            $version = $productMetadata->getVersion(); //will return the magento version
+            $resultData['Magento2_Version'] = $version;
+            // ROI Hunter Easy version
+            $resultData['ROI_Hunter_Easy_Version'] = $this->_moduleList->getOne('BusinessFactory_RoiHunterEasy')['setup_version'];
 
             $resultPage->setData($resultData);
 

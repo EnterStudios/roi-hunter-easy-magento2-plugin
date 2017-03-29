@@ -254,6 +254,12 @@ class Cron
         $collection->addAttributeToFilter('status', ['in' => $this->productStatus->getVisibleStatusIds()]);
         $collection->addAttributeToFilter('visibility', ['in' => $this->productVisibility->getVisibleInSiteIds()]);
 
+        // setting correct Product URL
+        $collection->addUrlRewrite();
+
+        $store = $this->_storeManager->getStore();
+        $collection->addStoreFilter($store);
+
         $collection->load();
         return $collection;
     }
@@ -289,7 +295,12 @@ class Cron
         $xmlWriter->writeElement('g:title', $_product->getName());
         $xmlWriter->writeElement('g:description', $this->getDescription($_product));
         $xmlWriter->writeElement('g:link', $_product->getProductUrl());
-        $xmlWriter->writeElement('g:brand', $_product->getAttributeText('manufacturer'));
+
+        // replaced getAttributeText with safer option
+        $attributeCode = 'manufacturer';
+        if ($_product->getData($attributeCode) !== null) {
+            $xmlWriter->writeElement('g:brand', $_product->getAttributeText($attributeCode));
+        }
 
         $xmlWriter->writeElement('g:condition', 'new');
         // TODO add more attributes if needed.
@@ -355,8 +366,16 @@ class Cron
 
         $xmlWriter->writeElement('g:price', $_product->getPrice());
         $xmlWriter->writeElement('g:sale_price', $_product->getSpecialPrice());
-        $xmlWriter->writeElement('g:size', $_product->getAttributeText('size'));
-        $xmlWriter->writeElement('g:color', $_product->getAttributeText('color'));
+        // replaced getAttributeText with safer option
+        $attributeCode = 'size';
+        if ($_product->getData($attributeCode) !== null) {
+            $xmlWriter->writeElement('g:size', $_product->getAttributeText($attributeCode));
+        }
+        // replaced getAttributeText with safer option
+        $attributeCode = 'color';
+        if ($_product->getData($attributeCode) !== null) {
+            $xmlWriter->writeElement('g:color', $_product->getAttributeText($attributeCode));
+        }
         $xmlWriter->writeElement('g:availability', $this->doIsInStock($_product));
     }
 
