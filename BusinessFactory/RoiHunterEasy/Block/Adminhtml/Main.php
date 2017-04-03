@@ -33,7 +33,7 @@ class Main extends Template
 
     public function getStoreBaseUrl()
     {
-        return $this->_storeManager->getStore()->getBaseUrl();
+        return $this->_storeManager->getDefaultStoreView()->getBaseUrl();
     }
 
     public function getStoreName()
@@ -48,7 +48,7 @@ class Main extends Template
 
     public function getStoreCurrency()
     {
-        return $this->_storeManager->getStore()->getBaseCurrencyCode();
+        return $this->_storeManager->getDefaultStoreView()->getBaseCurrencyCode();
     }
 
     public function getDevelopmentMode() {

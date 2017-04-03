@@ -28,12 +28,14 @@ class Debug extends Action
     private $mainItemFactory;
 
     protected $_moduleList;
+    private $_storeManager;
 
     public function __construct(
         Context $context,
         JsonFactory $jsonResultFactory,
         MainItemFactory $mainItemFactory,
         ModuleListInterface $moduleList,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
         Logger $logger
     )
     {
@@ -41,6 +43,7 @@ class Debug extends Action
         $this->mainItemFactory = $mainItemFactory;
         $this->loggerMy = $logger;
         $this->_moduleList = $moduleList;
+        $this->_storeManager = $storeManager;
 
         parent::__construct($context);
     }
@@ -105,6 +108,7 @@ class Debug extends Action
             $resultData['Magento2_Version'] = $version;
             // ROI Hunter Easy version
             $resultData['ROI_Hunter_Easy_Version'] = $this->_moduleList->getOne('BusinessFactory_RoiHunterEasy')['setup_version'];
+            $resultData['Stores array'] = $this->_storeManager->getStores();
 
             $resultPage->setData($resultData);
 
