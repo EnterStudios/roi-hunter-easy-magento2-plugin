@@ -144,6 +144,16 @@ class Cron
         file_put_contents($pathTemp, "");
 
         try {
+            // Prepare default store context
+            $stores = $this->_storeManager->getStores();
+            $this->loggerMy->info("Stores:", $stores);
+
+            $defaultStore = $this->_storeManager->getDefaultStoreView();
+            $this->loggerMy->info("DefStoreId: " . $defaultStore->getId() . ". DefStoreName: " . $defaultStore->getName());
+
+            $this->_storeManager->setCurrentStore($defaultStore);
+
+            // Start feed creation
             $xmlWriter = new XMLWriter();
             $xmlWriter->openMemory();
             $xmlWriter->startDocument('1.0', 'UTF-8');
@@ -159,7 +169,7 @@ class Cron
 
             $total_time_start = microtime(true);
             $time_start = microtime(true);
-            $products = $this->getProductCollection();
+            $products = $this->getProductCollection($defaultStore);
             $time_end = microtime(true);
             $execution_time = ($time_end - $time_start);
             $this->loggerMy->info('getProductCollection count: ' . count($products) . '. Execution time: '
@@ -233,9 +243,10 @@ class Cron
     }
 
     /**
+     * @param $store
      * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
      */
-    private function getProductCollection()
+    private function getProductCollection($store)
     {
         $collection = $this->collectionFactory->create();
 
@@ -256,8 +267,6 @@ class Cron
 
         // setting correct Product URL
         $collection->addUrlRewrite();
-
-        $store = $this->_storeManager->getStore();
         $collection->addStoreFilter($store);
 
         $collection->load();
