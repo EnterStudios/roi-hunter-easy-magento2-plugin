@@ -91,15 +91,15 @@ class Index extends Action
             $this->loggerMy->info("Cron generating started manually.");
             $resultCode = $this->cron->createFeed();
             if($resultCode == true){
-                $resultPage->setData('Feed generated.');
+                $resultPage->setData('Feeds generated.');
             } else {
-                $resultPage->setData('Feed not generated.');
+                $resultPage->setData('Feeds not generated. See logs for more info.');
             }
         } catch (\Exception $exception) {
             $this->loggerMy->info($exception);
             $this->loggerMy->info($this->getRequest());
             $resultPage->setHttpResponseCode(500);
-            $resultPage->setData('Feed generation failed.');
+            $resultPage->setData('Feeds generation failed.');
         }
 
 //            // buffer all upcoming output

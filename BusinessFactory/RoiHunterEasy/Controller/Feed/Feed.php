@@ -1,4 +1,5 @@
 <?php
+
 namespace BusinessFactory\RoiHunterEasy\Controller\Feed;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
@@ -7,6 +8,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\Response\Http\FileFactory;
 use Magento\Framework\Controller\Result\JsonFactory;
+use Magento\Framework\Filesystem;
 
 class Feed extends Action
 {
@@ -20,17 +22,20 @@ class Feed extends Action
      * @var Logger
      */
     private $loggerMy;
+    private $filesystem;
 
     public function __construct(
         Context $context,
         Logger $logger,
         FileFactory $fileFactory,
-        JsonFactory $jsonResultFactory
+        JsonFactory $jsonResultFactory,
+        Filesystem $filesystem
     )
     {
         $this->loggerMy = $logger;
         $this->fileFactory = $fileFactory;
         $this->jsonResultFactory = $jsonResultFactory;
+        $this->filesystem = $filesystem;
         parent::__construct($context);
     }
 
@@ -39,19 +44,44 @@ class Feed extends Action
         $this->loggerMy->info("Get product feed called.");
 
         try {
-            $filename = "roi_hunter_easy_feed_final.xml";
+            $format = $this->getRequest()->getParam("format");
+            $this->loggerMy->info("Format: " . $format);
+            if (!isset($format) || trim($format) === '') {
+                $format = "xml";
+            }
 
-            return $this->fileFactory->create(
-                $filename,
-                [
-                    'type' => "filename", //type has to be "filename"
-                    'value' => "feeds/{$filename}", // path will append to the base dir
-                    //'rm'    => true, // add this only if you would like to file to deleted after download from server
-                ],
-                $baseDir = DirectoryList::VAR_DIR,
-                $contentType = 'application/octet-stream',
-                $contentLength = null
-            );
+            $this->loggerMy->info("Endformat: " . $format);
+
+            // TODO test feed fet with different format and cases
+            $dirPath = $this->filesystem->getDirectoryWrite(DirectoryList::VAR_DIR)->getAbsolutePath();
+            $filename = "roi_hunter_easy_feed_final." . $format;
+
+            $this->loggerMy->info("Filename: " . $filename);
+            $this->loggerMy->info($dirPath . 'feeds/' . $filename);
+            $this->loggerMy->info('Exists: ' . file_exists($dirPath . 'feeds/' . $filename));
+            if (file_exists($dirPath . 'feeds/' . $filename)) {
+                $this->loggerMy->info("Exists");
+                return $this->fileFactory->create(
+                    $filename,
+                    [
+                        'type' => "filename", //type has to be "filename"
+                        'value' => "feeds/{$filename}", // path will append to the base dir
+                        //'rm'    => true, // add this only if you would like to file to deleted after download from server
+                    ],
+                    $baseDir = DirectoryList::VAR_DIR,
+                    $contentType = 'application/octet-stream',
+                    $contentLength = null
+                );
+            } else {
+                $this->loggerMy->info("Doesn't exists");
+                $this->loggerMy->info("Feed file: " . $filename . " doesn't exists");
+                $resultPage = $this->jsonResultFactory->create();
+                $resultPage->setHttpResponseCode(\Magento\Framework\Webapi\Exception::HTTP_NOT_FOUND);
+                $resultPage->setData(
+                    ['error_message' => "Feed file doesn't exists"]
+                );
+                return $resultPage;
+            }
         } catch (\Exception $exception) {
             $this->loggerMy->info($exception);
             $this->loggerMy->info($this->getRequest());
