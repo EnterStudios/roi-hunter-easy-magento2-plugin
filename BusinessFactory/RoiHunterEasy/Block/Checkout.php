@@ -24,6 +24,8 @@ class Checkout extends Template
     protected $customerSession;
     protected $prodId;
     protected $prodPrice;
+    protected $conversionCurrency;
+
     /**
      * @var MainItemFactory
      */
@@ -51,6 +53,44 @@ class Checkout extends Template
         parent::__construct($context, $data);
     }
 
+
+    /**
+     * Render Remarketing tracking scripts
+     *
+     * @return string
+     */
+    protected function _toHtml()
+    {
+        try {
+            // find out if session was set
+            $checkoutRemarketingBase64 = $this->customerSession->getMyValue();
+            $checkoutRemarketingJson = base64_decode($checkoutRemarketingBase64);
+            $checkoutRemarketing = json_decode($checkoutRemarketingJson, true);
+
+            if ($checkoutRemarketing && array_key_exists('pagetype', $checkoutRemarketing)) {
+                $pageType = $checkoutRemarketing['pagetype'];
+
+                // render template with remarketing tag
+                if ($pageType === 'checkout') {
+                    $this->prodId = $checkoutRemarketing['ids'];
+                    $this->prodPrice = $checkoutRemarketing['price'];
+                    $this->conversionCurrency = $checkoutRemarketing['currency'];
+
+                    // unset session value
+                    $this->customerSession->unsMyValue();
+
+                    return parent::_toHtml();
+                }
+            }
+        } catch (\Exception $exception) {
+            $this->logger->info(__METHOD__ . ' exception.');
+            $this->logger->info($exception);
+        }
+
+        return '';
+    }
+
+
     public function getConversionId()
     {
         try {
@@ -61,11 +101,11 @@ class Checkout extends Template
             if ($conversionId != null) {
                 return $conversionId;
             } else {
-                $this->logger->info("Conversion ID not found during " . __METHOD__);
+                $this->logger->info('Conversion ID not found during ' . __METHOD__);
                 return null;
             }
         } catch (\Exception $exception) {
-            $this->logger->info(__METHOD__ . " exception.");
+            $this->logger->info(__METHOD__ . ' exception.');
             $this->logger->info($exception);
             return null;
         }
@@ -74,52 +114,48 @@ class Checkout extends Template
     public function getProdId()
     {
         if (!$this->prodId) {
-            $this->logger->info("Product ID not found during " . __METHOD__);
+            $this->logger->info('Product ID not found during ' . __METHOD__);
+            return null;
         }
-        return $this->prodId;
+        return json_encode($this->prodId);
     }
 
     public function getProdPrice()
     {
         if (!$this->prodPrice) {
-            $this->logger->info("Product price not found during " . __METHOD__);
+            $this->logger->info('Product price not found during ' . __METHOD__);
+            return null;
         }
         return $this->prodPrice;
     }
 
-    /**
-     * Render GA tracking scripts
-     *
-     * @return string
-     */
-    protected function _toHtml()
+    public function getConversionLabel()
     {
         try {
-            // find out if session was set
-            $checkout_remarketing_base64 = $this->customerSession->getMyValue();
-
-            $checkout_remarketing_json = base64_decode($checkout_remarketing_base64);
-            $checkout_remarketing = json_decode($checkout_remarketing_json, true);
-
-            if ($checkout_remarketing && array_key_exists('pagetype', $checkout_remarketing)) {
-                $pagetype = $checkout_remarketing['pagetype'];
-
-                // render template with remarketing tag
-                if ($pagetype === "checkout" && $checkout_remarketing) {
-                    $this->prodId = json_encode($checkout_remarketing['ids']);
-                    $this->prodPrice = $checkout_remarketing['price'];
-
-                    // unset session value
-                    $this->customerSession->unsMyValue();
-
-                    return parent::_toHtml();
-                }
+            $collection = $this->mainItemFactory->create()->getCollection();
+            if (($mainItem = ($collection->getLastItem())) === null) {
+                $this->logger->info('Table record not found during ' . __METHOD__);
+                return null;
             }
+            if (($conversionLabel = $mainItem->getConversionLabel()) === null) {
+                $this->logger->info('Conversion Label not found during ' . __METHOD__);
+                return null;
+            }
+            return $conversionLabel;
         } catch (\Exception $exception) {
-            $this->logger->info(__METHOD__ . " exception.");
+            $this->logger->info(__METHOD__ . ' exception');
             $this->logger->info($exception);
+            return null;
         }
-
-        return '';
     }
+
+    public function getConversionCurrency()
+    {
+        if (!$this->conversionCurrency) {
+            $this->logger->info('Conversion currency not found during ' . __METHOD__);
+            return null;
+        }
+        return $this->conversionCurrency;
+    }
+
 }

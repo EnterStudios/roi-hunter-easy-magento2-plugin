@@ -58,6 +58,7 @@ class CheckoutObserver implements ObserverInterface
             }
 
             $conversionValue = 0;
+            $currency = null;
             $productIds = [];
             $parentItemIdToProductIdMap = [];
             $configurableChildItems = [];
@@ -67,24 +68,25 @@ class CheckoutObserver implements ObserverInterface
             /** @var $order \Magento\Sales\Model\Order */
             foreach ($this->collection as $order) {
                 $conversionValue += $order->getBaseGrandTotal();
+                $currency = $order->getStoreCurrencyCode();
 
                 // returns all order items
-                // configurable items are separated to two items - one simple with parent_item_id and one configurable with item_id
+                // configurable items are divided into two items - one simple with parent_item_id and one configurable with item_id
                 $items = $order->getAllItems();
                 foreach ($items as $item) {
-                    $parent_item_id = $item->getParentItemId();
-                    $product_type = $item->getProductType();
+                    $parentItemId = $item->getParentItemId();
+                    $productType = $item->getProductType();
 
-                    if ($parent_item_id === null) {
-                        if ($product_type === "simple" || $product_type === "downloadable") {
+                    if ($parentItemId === null) {
+                        if ($productType === 'simple' || $productType === 'downloadable') {
                             // simple product - write directly to the result IDs array
-                            array_push($productIds, "mag_" . $item->getProductId());
-                        } else if ($product_type === "configurable") {
+                            array_push($productIds, 'mag_' . $item->getProductId());
+                        } else if ($productType === 'configurable') {
                             // configurable parent product
                             // create map of parent IDS : parent objects
                             $parentItemIdToProductIdMap[$item['item_id']] = $item['product_id'];
                         } else {
-                            $this->loggerMy->info("Unknown product type: " . $product_type);
+                            $this->loggerMy->info('Unknown product type: ' . $productType);
                         }
                     } else {
                         // configurable child product
@@ -95,21 +97,26 @@ class CheckoutObserver implements ObserverInterface
 
             // iterate over children items a find parent item in the map
             foreach ($configurableChildItems as $item) {
-                $id = "mag_" . $parentItemIdToProductIdMap[$item["parent_item_id"]] . "_" . $item["product_id"];
+                $id = 'mag_' . $parentItemIdToProductIdMap[$item['parent_item_id']] . '_' . $item['product_id'];
                 array_push($productIds, $id);
             }
 
-            $checkout_remarketing_data = [
+            $checkoutRemarketingData = [
                 'pagetype' => 'checkout',
                 'ids' => $productIds,
-                'price' => $conversionValue
+                'price' => $conversionValue,
+                'currency' => $currency
             ];
-            $checkout_remarketing_json = json_encode($checkout_remarketing_data);
-            $checkout_remarketing_base64 = base64_encode($checkout_remarketing_json);
-            $this->customerSession->setMyValue($checkout_remarketing_base64);
+
+            $this->loggerMy->info('Setting temporary customer session value: ' . json_encode($checkoutRemarketingData));
+
+            $checkoutRemarketingJson = json_encode($checkoutRemarketingData);
+            $checkoutRemarketingBase64 = base64_encode($checkoutRemarketingJson);
+            $this->customerSession->setMyValue($checkoutRemarketingBase64);
 
             return $this;
         } catch (\Exception $e) {
+            $this->loggerMy->info(__METHOD__ . ' exception.');
             $this->loggerMy->info($e);
             return $this;
         }

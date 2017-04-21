@@ -1,4 +1,5 @@
 <?php
+
 namespace BusinessFactory\RoiHunterEasy\Controller\StoreDetails;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
@@ -87,7 +88,7 @@ class Add extends Action
             // Check if data exists.
             $mainItemCollection = $this->mainItemFactory->create()->getCollection();
             if ($mainItemCollection->count() <= 0) {
-                $resultPage->setData("Entry not exist.");
+                $resultPage->setData('Entry not exist.');
                 $resultPage->setHttpResponseCode(404);
                 return;
             } else {
@@ -95,7 +96,7 @@ class Add extends Action
 
                 // Check if we can access data.
                 if ($dataEntity->getClientToken() == null || $dataEntity->getClientToken() !== $authorizationHeader) {
-                    $resultPage->setData("Not authorized");
+                    $resultPage->setData('Not authorized');
                     $resultPage->setHttpResponseCode(403);
                     return;
                 }
@@ -120,7 +121,7 @@ class Add extends Action
         try {
             // Get request params
             $requestData = $request->getParams();
-            $this->loggerMy->info("Process add request with data: ", $requestData);
+            $this->loggerMy->info('Process add request with data: ', $requestData);
 
             $authorizationHeader = $request->getHeader('X-Authorization');
 
@@ -128,14 +129,14 @@ class Add extends Action
             $mainItemCollection = $this->mainItemFactory->create()->getCollection();
             if ($mainItemCollection->count() <= 0) {
                 $dataEntity = $this->mainItemFactory->create();
-                $dataEntity->setDescription("New");
+                $dataEntity->setDescription('New');
             } else {
                 $dataEntity = $mainItemCollection->getLastItem();
-                $dataEntity->setDescription("Updated");
+                $dataEntity->setDescription('Updated');
 
 //                    If data already exist check for client token.
                 if ($dataEntity->getClientToken() != null && $dataEntity->getClientToken() !== $authorizationHeader) {
-                    $resultPage->setData("Not authorized");
+                    $resultPage->setData('Not authorized');
                     $resultPage->setHttpResponseCode(403);
                     return;
                 }
@@ -145,7 +146,7 @@ class Add extends Action
             if ($dataEntity->getClientToken() == null) {
                 $client_token = $request->getParam('client_token');
                 if ($client_token == null) {
-                    $resultPage->setData("Missing client token.");
+                    $resultPage->setData('Missing client token.');
                     $resultPage->setHttpResponseCode(422);
                     return;
                 } else {
@@ -157,7 +158,7 @@ class Add extends Action
             if ($dataEntity->getAccessToken() == null) {
                 $goostav_access_token = $request->getParam('access_token');
                 if ($goostav_access_token == null) {
-                    $resultPage->setData("Missing tokens.");
+                    $resultPage->setData('Missing tokens.');
                     $resultPage->setHttpResponseCode(422);
                     return;
                 } else {
@@ -196,6 +197,12 @@ class Add extends Action
             if ($adultOriented !== null) {
                 $dataEntity->setAdultOriented($adultOriented === 'true');
             }
+            // Set conversion label
+            $conversionLabel = $request->getParam('conversion_label');
+            if ($conversionLabel !== null) {
+                $dataEntity->setConversionLabel($conversionLabel);
+            }
+
 
             // Persist data
             $dataEntity->save();
@@ -206,7 +213,7 @@ class Add extends Action
 
             // Return response
             $resultPage->setData([
-                "data" => $requestData
+                'data' => $requestData
             ]);
         } catch (\Exception $exception) {
             $this->loggerMy->info($exception);
@@ -224,18 +231,18 @@ class Add extends Action
         try {
             if ($filename != null) {
                 $path = $this->filesystem->getDirectoryWrite(DirectoryList::ROOT)->getAbsolutePath() . $filename;
-                $content = "google-site-verification: " . $filename;
+                $content = 'google-site-verification: ' . $filename;
 
-                $fp = fopen($path, "wb");
+                $fp = fopen($path, 'wb');
                 fwrite($fp, $content);
                 fclose($fp);
 
                 $path = $this->filesystem->getDirectoryWrite(DirectoryList::PUB)->getAbsolutePath() . $filename;
-                $fp = fopen($path, "wb");
+                $fp = fopen($path, 'wb');
                 fwrite($fp, $content);
                 fclose($fp);
             } else {
-                $this->loggerMy->info("ERROR: Cannot create verification file. Missing filename.");
+                $this->loggerMy->info('ERROR: Cannot create verification file. Missing filename.');
             }
         } catch (\Exception $exception) {
             $this->loggerMy->info($exception);

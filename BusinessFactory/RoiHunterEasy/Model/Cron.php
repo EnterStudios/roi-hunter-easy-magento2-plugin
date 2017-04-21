@@ -246,6 +246,7 @@ class Cron
         $collection->addAttributeToSelect('description');
         $collection->addAttributeToSelect('price');
         $collection->addAttributeToSelect('specialPrice');
+        $collection->addAttributeToSelect('finalPrice');
         $collection->addAttributeToSelect('size');
         $collection->addAttributeToSelect('color');
         $collection->addAttributeToSelect('pattern');
@@ -277,8 +278,8 @@ class Cron
         $xmlWriter->writeAttribute('version', '2.0');
         $xmlWriter->writeAttributeNs('xmlns', 'g', null, 'http://base.google.com/ns/1.0');
         $xmlWriter->startElement('channel');
-        $xmlWriter->writeElement('title', 'ROI Hunter Easy - Magento data feed');
-        $xmlWriter->writeElement('description', 'Magento data feed used in Google Merchants');
+        $xmlWriter->writeElement('title', 'ROI Hunter Easy - Magento 2 data feed');
+        $xmlWriter->writeElement('description', 'Magento 2 data feed used in Google Merchants');
         $xmlWriter->writeElement('date', $date = $this->date->gmtDate());
         $xmlWriter->writeElement('link', $defaultStore->getBaseUrl());
     }
@@ -536,6 +537,8 @@ class Cron
         $storeUrl = $this->_storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_MEDIA);
         $imageUrl = $product->getImage();
         return $storeUrl . 'catalog/product' . $imageUrl;
+
+//      TODO magento 1 has different image loading, but still didn't work completely
     }
 
     /**
@@ -567,7 +570,7 @@ class Cron
      */
     function getSalePrice($product, $withCurrency = false)
     {
-        $salePrice = $product->getSpecialPrice();
+        $salePrice = $product->getFinalPrice();
         if ($salePrice && $withCurrency) {
             $salePrice = $salePrice . ' ' . $this->getCurrency();
         }

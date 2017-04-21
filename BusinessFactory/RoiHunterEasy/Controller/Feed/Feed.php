@@ -45,22 +45,15 @@ class Feed extends Action
 
         try {
             $format = $this->getRequest()->getParam("format");
-            $this->loggerMy->info("Format: " . $format);
             if (!isset($format) || trim($format) === '') {
                 $format = "xml";
             }
 
-            $this->loggerMy->info("Endformat: " . $format);
-
-            // TODO test feed fet with different format and cases
             $dirPath = $this->filesystem->getDirectoryWrite(DirectoryList::VAR_DIR)->getAbsolutePath();
             $filename = "roi_hunter_easy_feed_final." . $format;
 
-            $this->loggerMy->info("Filename: " . $filename);
-            $this->loggerMy->info($dirPath . 'feeds/' . $filename);
-            $this->loggerMy->info('Exists: ' . file_exists($dirPath . 'feeds/' . $filename));
+            $this->loggerMy->info("Get feed file: " .$dirPath . 'feeds/' . $filename);
             if (file_exists($dirPath . 'feeds/' . $filename)) {
-                $this->loggerMy->info("Exists");
                 return $this->fileFactory->create(
                     $filename,
                     [
@@ -73,8 +66,7 @@ class Feed extends Action
                     $contentLength = null
                 );
             } else {
-                $this->loggerMy->info("Doesn't exists");
-                $this->loggerMy->info("Feed file: " . $filename . " doesn't exists");
+                $this->loggerMy->info("Feed file doesn't exists");
                 $resultPage = $this->jsonResultFactory->create();
                 $resultPage->setHttpResponseCode(\Magento\Framework\Webapi\Exception::HTTP_NOT_FOUND);
                 $resultPage->setData(
