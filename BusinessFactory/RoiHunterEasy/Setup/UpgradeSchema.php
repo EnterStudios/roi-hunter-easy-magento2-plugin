@@ -16,7 +16,7 @@ class UpgradeSchema implements UpgradeSchemaInterface
         if (!$context->getVersion()) {
             // No previous version found, installation, InstallSchema was just executed
         } else {
-            if (version_compare($context->getVersion(), '1.0.10') < 0) {
+            if (version_compare($context->getVersion(), '1.1.0') < 0) {
                 // Get module table
                 $tableName = $setup->getTable('businessfactory_roihuntereasy_main');
 
