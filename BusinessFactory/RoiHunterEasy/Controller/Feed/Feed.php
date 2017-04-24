@@ -41,24 +41,24 @@ class Feed extends Action
 
     public function execute()
     {
-        $this->loggerMy->info("Get product feed called.");
+        $this->loggerMy->info('Get product feed called.');
 
         try {
-            $format = $this->getRequest()->getParam("format");
+            $format = $this->getRequest()->getParam('format');
             if (!isset($format) || trim($format) === '') {
-                $format = "xml";
+                $format = 'xml';
             }
 
             $dirPath = $this->filesystem->getDirectoryWrite(DirectoryList::VAR_DIR)->getAbsolutePath();
-            $filename = "roi_hunter_easy_feed_final." . $format;
+            $filename = 'roi_hunter_easy_feed_final.' . $format;
 
-            $this->loggerMy->info("Get feed file: " .$dirPath . 'feeds/' . $filename);
+            $this->loggerMy->info('Get feed file: ' .$dirPath . 'feeds/' . $filename);
             if (file_exists($dirPath . 'feeds/' . $filename)) {
                 return $this->fileFactory->create(
                     $filename,
                     [
-                        'type' => "filename", //type has to be "filename"
-                        'value' => "feeds/{$filename}", // path will append to the base dir
+                        'type' => 'filename', //type has to be 'filename'
+                        'value' => 'feeds/{$filename}', // path will append to the base dir
                         //'rm'    => true, // add this only if you would like to file to deleted after download from server
                     ],
                     $baseDir = DirectoryList::VAR_DIR,

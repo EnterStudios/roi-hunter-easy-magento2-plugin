@@ -280,7 +280,7 @@ class Cron
         $xmlWriter->startElement('channel');
         $xmlWriter->writeElement('title', 'ROI Hunter Easy - Magento 2 data feed');
         $xmlWriter->writeElement('description', 'Magento 2 data feed used in Google Merchants');
-        $xmlWriter->writeElement('date', $date = $this->date->gmtDate());
+        $xmlWriter->writeElement('date', $this->date->gmtDate());
         $xmlWriter->writeElement('link', $defaultStore->getBaseUrl());
     }
 
