@@ -176,7 +176,7 @@ class Cron
             foreach ($productArray as $product) {
                 switch ($product->getTypeId()) {
                     case 'downloadable':
-                        if ($product->getPrice() <= 0) {
+                        if ($this->getPrice($product) <= 0) {
                             break;
                         }
 //                      Else same processing as simple product
@@ -361,7 +361,7 @@ class Cron
         // process common attributes
         $this->writeParentProductAttributesXml($product, $xmlWriter);
         // process advanced attributes
-        $this->writeChildProductAttributes($product, $xmlWriter);
+        $this->writeChildProductAttributesXml($product, $xmlWriter);
         // categories
         $catCollection = $this->getProductTypes($product);
         $this->writeProductTypesXml($catCollection, $xmlWriter);
@@ -392,7 +392,7 @@ class Cron
      * @param Mixed $product
      * @param XMLWriter $xmlWriter
      */
-    private function writeChildProductAttributes($product, $xmlWriter)
+    private function writeChildProductAttributesXml($product, $xmlWriter)
     {
         $xmlWriter->writeElement('g:image_link', $this->getImageUrl($product));
 
@@ -450,7 +450,7 @@ class Cron
             // process common attributes
             $this->writeParentProductAttributesXml($product, $xmlWriter);
             // process advanced attributes
-            $this->writeChildProductAttributes($childProduct, $xmlWriter);
+            $this->writeChildProductAttributesXml($childProduct, $xmlWriter);
             // categories
             $this->writeProductTypesXml($catCollection, $xmlWriter);
 
@@ -537,8 +537,6 @@ class Cron
         $storeUrl = $this->_storeManager->getStore()->getBaseUrl(UrlInterface::URL_TYPE_MEDIA);
         $imageUrl = $product->getImage();
         return $storeUrl . 'catalog/product' . $imageUrl;
-
-//      TODO magento 1 has different image loading, but still didn't work completely
     }
 
     /**

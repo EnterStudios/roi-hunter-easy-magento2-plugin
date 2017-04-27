@@ -50,7 +50,7 @@ class Reset extends Action
      */
     public function execute()
     {
-        $this->loggerMy->info(__METHOD__ . " invoked");
+        $this->loggerMy->info(__METHOD__ . ' invoked');
 
         /** @var \Magento\Framework\Controller\Result\Json $response */
         $response = $this->resultJsonFactory->create();
@@ -59,19 +59,20 @@ class Reset extends Action
             // If no items -> success
             $mainItemCollection = $this->mainItemFactory->create()->getCollection();
             if ($mainItemCollection->count() <= 0) {
-                return $response->setData("Reset completed.");
+                return $response->setData('Reset completed.');
             } else {
                 // Delete all plugin data
                 $accessToken = $mainItemCollection->getLastItem()->getAccessToken();
-                foreach ($mainItemCollection as $mainItem) {
-                    $mainItem->delete();
-                }
 
                 // Send information request
                 $httpHeaders = new Headers();
                 $httpHeaders->addHeaders([
-                    'X-Authorization' => $accessToken
+                    'X-Authorization' => '' . $accessToken
                 ]);
+
+                foreach ($mainItemCollection as $mainItem) {
+                    $mainItem->delete();
+                }
 
                 $request = new Request();
                 $request->setHeaders($httpHeaders);
@@ -90,14 +91,14 @@ class Reset extends Action
                 $result = $client->send($request);
                 $this->loggerMy->info($result);
                 if ($result->getStatusCode() >= 200 && $result->getStatusCode() < 300) {
-                    return $response->setData("Reset completed.");
+                    return $response->setData('Reset completed.');
                 } else {
-                    return $response->setData("Remote reset failed. However new registration should be alright.");
+                    return $response->setData('Remote reset failed. However new registration should be alright.');
                 }
             }
         } catch (\Exception $e) {
             $this->loggerMy->info($e);
-            return $response->setData("Reset failed. Please check logs and contact support at easy@roihunter.com.");
+            return $response->setData('Reset failed. Please check logs and contact support at easy@roihunter.com.');
         }
     }
 

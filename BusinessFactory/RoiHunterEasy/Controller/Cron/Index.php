@@ -1,4 +1,5 @@
 <?php
+
 namespace BusinessFactory\RoiHunterEasy\Controller\Cron;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
@@ -79,18 +80,20 @@ class Index extends Action
     {
         try {
             $authorizationHeader = $this->getRequest()->getHeader('X-Authorization');
-
             $mainItemCollection = $this->mainItemFactory->create()->getCollection();
-            $clientToken = $mainItemCollection->getLastItem()->getClientToken();
-            if ($clientToken == null || $clientToken !== $authorizationHeader) {
-                $resultPage->setData("Not authorized");
-                $resultPage->setHttpResponseCode(403);
-                return;
+
+            if ($mainItemCollection !== null && $mainItemCollection->count() > 0) {
+                $clientToken = $mainItemCollection->getLastItem()->getClientToken();
+                if ($clientToken !== null && $clientToken !== $authorizationHeader) {
+                    $resultPage->setData('Not authorized');
+                    $resultPage->setHttpResponseCode(403);
+                    return;
+                }
             }
 
-            $this->loggerMy->info("Cron generating started manually.");
+            $this->loggerMy->info('Cron generating started manually.');
             $resultCode = $this->cron->createFeed();
-            if($resultCode == true){
+            if ($resultCode == true) {
                 $resultPage->setData('Feeds generated.');
             } else {
                 $resultPage->setData('Feeds not generated. See logs for more info.');
@@ -101,30 +104,5 @@ class Index extends Action
             $resultPage->setHttpResponseCode(500);
             $resultPage->setData('Feeds generation failed.');
         }
-
-//            // buffer all upcoming output
-//            ob_start();
-//
-//            echo "Cron is running.";
-//
-//            // get the size of the output
-//            $size = ob_get_length();
-//
-//            // send headers to tell the browser to close the connection
-//            header("Content-Length: $size");
-//            header('Connection: close');
-//
-//            // flush all output
-//            ob_end_flush();
-//            ob_flush();
-//            flush();
-//
-//            // if you're using sessions, this prevents subsequent requests
-//            // from hanging while the background process executes
-//            if (session_id()) session_write_close();
-//
-//            /******** background process starts here ********/
-//            // start cron parser
-//            $this->_cron->createFeed();
     }
 }
