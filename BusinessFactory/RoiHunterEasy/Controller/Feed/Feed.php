@@ -58,7 +58,7 @@ class Feed extends Action
                     $filename,
                     [
                         'type' => 'filename', //type has to be 'filename'
-                        'value' => 'feeds/{$filename}', // path will append to the base dir
+                        'value' => "feeds/{$filename}", // path will append to the base dir
                         //'rm'    => true, // add this only if you would like to file to deleted after download from server
                     ],
                     $baseDir = DirectoryList::VAR_DIR,
