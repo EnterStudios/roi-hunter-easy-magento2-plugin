@@ -96,6 +96,8 @@ class State extends Action
         try {
             // Get request params
             $requestData = $this->getRequest()->getParams();
+            $this->loggerMy->info('Process POST state request with data: ', $requestData);
+
             $authorizationHeader = $this->getRequest()->getHeader('X-Authorization');
             $newCreationState = $this->getRequest()->getParam('new_state');
 

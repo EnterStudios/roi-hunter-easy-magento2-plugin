@@ -109,6 +109,13 @@ class InstallSchema implements InstallSchemaInterface
             null,
             ['nullable' => false, 'default' => '1'],
             'Is Active'
+        )->addColumn(
+            'conversion_label',
+            Table::TYPE_TEXT,
+            255,
+            ['nullable' => true],
+            'Conversion label'
+
         )->setComment(
             'Data for ROI Hunter Easy module'
         );

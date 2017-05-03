@@ -1,4 +1,5 @@
 <?php
+
 namespace BusinessFactory\RoiHunterEasy\Model;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
@@ -14,6 +15,7 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Filesystem;
 use Magento\Framework\Filesystem\Driver\File;
 use Magento\Framework\Registry;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 use Magento\Framework\UrlInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use XMLWriter;
@@ -30,6 +32,7 @@ class Cron
      * @var Logger
      */
     private $loggerMy;
+    protected $date;
 
     private $fileMy;
 
@@ -50,9 +53,6 @@ class Cron
      */
     private $productVisibility;
 
-    /** @var \Magento\Framework\Filesystem\Io\File $io * */
-    private $ioDir;
-
     public function __construct(
         Logger $logger,
         Registry $registry,
@@ -67,7 +67,7 @@ class Cron
         StockRegistryInterface $stockRegistry,
         Filesystem $filesystem,
         File $file,
-        \Magento\Framework\Filesystem\Io\File $ioFile
+        DateTime $date
     )
     {
         $this->loggerMy = $logger;
@@ -83,22 +83,23 @@ class Cron
         $this->stockRegistry = $stockRegistry;
         $this->filesystem = $filesystem;
         $this->fileMy = $file;
-        $this->ioDir = $ioFile;
+        $this->date = $date;
     }
+
 
     /**
      * Method start new feed creation process, if not another feed creation process running.
      */
     public function createFeed()
     {
-        $this->loggerMy->info(__METHOD__ . " cron");
+        $this->loggerMy->info(__METHOD__ . ' cron');
         $path = $this->filesystem->getDirectoryWrite(DirectoryList::ROOT)->getAbsolutePath()
-            . "businessFactoryRoiHunterEasyFeedSign";
+            . 'businessFactoryRoiHunterEasyFeedSign';
         try {
             if (!file_exists($path)) {
                 // Create file
-                $fp = fopen($path, "wb");
-                fwrite($fp, "Running");
+                $fp = fopen($path, 'wb');
+                fwrite($fp, 'Running');
                 fclose($fp);
 
                 // Generate feed
@@ -108,7 +109,7 @@ class Cron
                 $this->fileMy->deleteFile($path);
                 return true;
             } else {
-                $this->loggerMy->info("Feed generation already running.");
+                $this->loggerMy->info('Feed generation already running.');
                 return false;
             }
         } catch (\Exception $e) {
@@ -134,89 +135,72 @@ class Cron
         $dirPath = $this->filesystem->getDirectoryWrite(DirectoryList::VAR_DIR)->getAbsolutePath();
 
         // Create dir
-        $this->ioDir->mkdir($dirPath . 'feeds', 0775);
+        $this->fileMy->createDirectory($dirPath . 'feeds', 0775);
 
         // Prepare paths
-        $pathTemp = $dirPath . "feeds/roi_hunter_easy_feed_temp.xml";
-        $pathFinal = $dirPath . "feeds/roi_hunter_easy_feed_final.xml";
-
-        // Clear file
-        file_put_contents($pathTemp, "");
+        $pathTempXml = $dirPath . 'feeds/roi_hunter_easy_feed_temp.xml';
+        $pathTempCsv = $dirPath . 'feeds/roi_hunter_easy_feed_temp.csv';
 
         try {
+            // Clear and file init XML
+            $xmlFile = $this->fileMy->fileOpen($pathTempXml, 'w');
+            // Clear and file init CSV
+            $csvFile = $this->fileMy->fileOpen($pathTempCsv, 'w');
+
+
             // Prepare default store context
             $stores = $this->_storeManager->getStores();
-            $this->loggerMy->info("Stores:", $stores);
-
+            $this->loggerMy->info('Stores:', $stores);
             $defaultStore = $this->_storeManager->getDefaultStoreView();
-            $this->loggerMy->info("DefStoreId: " . $defaultStore->getId() . ". DefStoreName: " . $defaultStore->getName());
-
+            $this->loggerMy->info('DefStoreId: ' . $defaultStore->getId() . '. DefStoreName: ' . $defaultStore->getName());
             $this->_storeManager->setCurrentStore($defaultStore);
 
-            // Start feed creation
-            $xmlWriter = new XMLWriter();
-            $xmlWriter->openMemory();
-            $xmlWriter->startDocument('1.0', 'UTF-8');
-            $xmlWriter->setIndent(true);
-
-            $xmlWriter->startElement('rss');
-            $xmlWriter->writeAttribute('version', '2.0');
-            $xmlWriter->writeAttributeNs('xmlns', 'g', null, 'http://base.google.com/ns/1.0');
-            $xmlWriter->startElement('channel');
-            $xmlWriter->writeElement('title', 'ROI Hunter Easy - Magento data feed');
-            $xmlWriter->writeElement('description', 'Magento data feed used in Google Merchants');
-            $xmlWriter->writeElement('link', $this->_storeManager->getStore()->getBaseUrl());
-
+            // Load products and prepare time measuring
             $total_time_start = microtime(true);
             $time_start = microtime(true);
-            $products = $this->getProductCollection($defaultStore);
+            $productArray = $this->getProductCollection($defaultStore);
             $time_end = microtime(true);
             $execution_time = ($time_end - $time_start);
-            $this->loggerMy->info('getProductCollection count: ' . count($products) . '. Execution time: '
+            $this->loggerMy->info('getProductCollection count: ' . count($productArray) . '. Execution time: '
                 . $execution_time);
 
+            // Init Xml Writer
+            $xmlWriter = new XMLWriter();
+            $this->initXmlWriter($xmlWriter, $defaultStore);
+            // Init Csv writing
+            $this->initCsvWriting($csvFile);
+
+
+            // Cycle all products
             $this->count = 0;
-
-            // debug variables
-            $limit_enabled = false;
-            $simple_products_count = 0;
-            $configurable_products_count = 0;
-            $simple_products_limit = 2;
-            $configurable_products_limit = 1;
-
-            foreach ($products as $_product) {
-//              Determine product type. Log: $this->loggerMy->info("Type: " . $_product->getTypeId());
-                switch ($_product->getTypeId()) {
+            foreach ($productArray as $product) {
+                switch ($product->getTypeId()) {
                     case 'downloadable':
-                        if ($_product->getPrice() <= 0) {
-//                          Inform about empty downloadable product: $this->loggerMy->info("Skip this");
+                        if ($this->getPrice($product) <= 0) {
                             break;
                         }
-//                        Else same processing as simple product
+//                      Else same processing as simple product
                     case 'simple':
-                        if (!$limit_enabled || $simple_products_count < $simple_products_limit) {
-                            $this->writeSimpleProduct($_product, $xmlWriter);
-                            $simple_products_count++;
-                        }
+                        $this->writeSimpleProductXml($product, $xmlWriter);
+
+                        // Csv simple product write
+                        $this->writeSimpleProductCsv($product, $csvFile);
                         break;
                     case 'configurable':
-                        if (!$limit_enabled || $configurable_products_count < $configurable_products_limit) {
-                            $this->writeConfigurableProduct($_product, $xmlWriter);
-                            $configurable_products_count++;
-                        }
+                        $this->writeConfigurableProductXml($product, $xmlWriter);
+
+                        // Csv configurable product write
+                        $this->writeConfigurableProductCsv($product, $csvFile);
                         break;
-                }
-                if ($limit_enabled && $simple_products_count >= $simple_products_limit &&
-                    $configurable_products_count >= $configurable_products_limit
-                ) {
-                    break;
                 }
 
                 $this->count++;
-                if ($this->count >= 512) {
+                if ($this->count >= 256) {
                     $this->count = 0;
-                    // After each 512 products flush memory to file.
-                    file_put_contents($pathTemp, $xmlWriter->flush(), FILE_APPEND);
+
+                    // After each 256 products flush memory to file.
+                    $this->fileMy->fileWrite($xmlFile, $xmlWriter->flush());
+                    $this->fileMy->fileFlush($xmlFile);
                 }
             }
 
@@ -224,17 +208,23 @@ class Cron
             $xmlWriter->endElement();
             $xmlWriter->endDocument();
 
-            // Final memory flush, rename temporary file and feed is done.
-            file_put_contents($pathTemp, $xmlWriter->flush(), FILE_APPEND);
-            if (rename($pathTemp, $pathFinal)) {
-                $this->loggerMy->info("Created feed renamed successful");
+            // Finish XML writing
+            $this->fileMy->fileWrite($xmlFile, $xmlWriter->flush());
+            $this->fileMy->fileFlush($xmlFile);
+            // Finish CSV writing
+            $this->fileMy->fileClose($csvFile);
+
+            $pathFinalXml = $dirPath . 'feeds/roi_hunter_easy_feed_final.xml';
+            $pathFinalCsv = $dirPath . 'feeds/roi_hunter_easy_feed_final.csv';
+            if (rename($pathTempXml, $pathFinalXml) && rename($pathTempCsv, $pathFinalCsv)) {
+                $this->loggerMy->info('Created feeds renamed successfully.');
             } else {
-                $this->loggerMy->info("ERROR: Created feed renamed unsuccessful");
+                $this->loggerMy->info('ERROR: Renaming feeds failed.');
             }
 
             $total_time_end = microtime(true);
             $total_execution_time = ($total_time_end - $total_time_start);
-            $this->loggerMy->info('total execution time: ' . $total_execution_time);
+            $this->loggerMy->info('Total execution time: ' . $total_execution_time);
         } catch (\Exception $e) {
             $this->loggerMy->info($e);
             throw $e;
@@ -256,6 +246,7 @@ class Cron
         $collection->addAttributeToSelect('description');
         $collection->addAttributeToSelect('price');
         $collection->addAttributeToSelect('specialPrice');
+        $collection->addAttributeToSelect('finalPrice');
         $collection->addAttributeToSelect('size');
         $collection->addAttributeToSelect('color');
         $collection->addAttributeToSelect('pattern');
@@ -274,66 +265,246 @@ class Cron
     }
 
     /**
-     * @param Mixed $_product
+     * @param XMLWriter $xmlWriter
+     * @param \Magento\Store\Api\Data\StoreInterface $defaultStore
+     */
+    private function initXmlWriter($xmlWriter, $defaultStore)
+    {
+        $xmlWriter->openMemory();
+        $xmlWriter->startDocument('1.0', 'UTF-8');
+        $xmlWriter->setIndent(true);
+
+        $xmlWriter->startElement('rss');
+        $xmlWriter->writeAttribute('version', '2.0');
+        $xmlWriter->writeAttributeNs('xmlns', 'g', null, 'http://base.google.com/ns/1.0');
+        $xmlWriter->startElement('channel');
+        $xmlWriter->writeElement('title', 'ROI Hunter Easy - Magento 2 data feed');
+        $xmlWriter->writeElement('description', 'Magento 2 data feed used in Google Merchants');
+        $xmlWriter->writeElement('date', $this->date->gmtDate());
+        $xmlWriter->writeElement('link', $defaultStore->getBaseUrl());
+    }
+
+    /**
+     * @param resource $csvFile
+     */
+    private function initCsvWriting($csvFile)
+    {
+        // CSV headers
+        $csvHeader = array(
+            'ID',
+            'Item title',
+            'Final URL',
+            'Image URL',
+            'Item description',
+            'Price',
+            'Sale price'
+        );
+        // write headers to CSV file
+        $this->fileMy->filePutCsv($csvFile, $csvHeader);
+    }
+
+    /**
+     * @param $product
+     * @param resource $csvFile
+     */
+    private function writeSimpleProductCsv($product, $csvFile)
+    {
+        $productDict = array(
+            'ID' => $this->getId($product, null),
+            'Item title' => $this->getTitle($product),
+            'Final URL' => $this->getProductUrl($product),
+            'Image URL' => $this->getImageUrl($product),
+            'Item description' => $this->getDescription($product),
+            'Price' => $this->getPrice($product, true),
+            'Sale price' => $this->getSalePrice($product, true),
+        );
+
+        // Write product to file
+        $this->fileMy->filePutCsv($csvFile, $productDict);
+    }
+
+    /**
+     * @param Mixed $product
+     * @param resource $csvFile
+     */
+    private function writeConfigurableProductCsv($product, $csvFile)
+    {
+        $childProductArray = $product->getTypeInstance()->getUsedProducts($product);
+        foreach ($childProductArray as $childProduct) {
+            $productDict = array(
+                'ID' => $this->getId($product, $childProduct),
+                'Item title' => $this->getTitle($product),
+                'Final URL' => $this->getProductUrl($product),
+                'Image URL' => $this->getImageUrl($childProduct),
+                'Item description' => $this->getDescription($product),
+                'Price' => $this->getPrice($childProduct, true),
+                'Sale price' => $this->getSalePrice($childProduct, true),
+            );
+
+            // Write product to file
+            $this->fileMy->filePutCsv($csvFile, $productDict);
+        }
+    }
+
+
+    /**
+     * @param Mixed $product
      * @param XMLWriter $xmlWriter
      */
-    private function writeSimpleProduct($_product, $xmlWriter)
+    private function writeSimpleProductXml($product, $xmlWriter)
     {
         $xmlWriter->startElement('item');
 
-        $xmlWriter->writeElement('g:id', "mag_" . $_product->getId());
-        $xmlWriter->writeElement('g:display_ads_id', "mag_" . $_product->getId());
+        $xmlWriter->writeElement('g:id', $this->getId($product, null));
+        $xmlWriter->writeElement('g:display_ads_id', $this->getDisplayAdsId($product, null));
 
         // process common attributes
-        $this->writeParentProductAttributes($_product, $xmlWriter);
+        $this->writeParentProductAttributesXml($product, $xmlWriter);
         // process advanced attributes
-        $this->writeChildProductAttributes($_product, $xmlWriter);
+        $this->writeChildProductAttributesXml($product, $xmlWriter);
         // categories
-        $catCollection = $this->getProductTypes($_product);
-        $this->writeProductTypes($catCollection, $xmlWriter);
+        $catCollection = $this->getProductTypes($product);
+        $this->writeProductTypesXml($catCollection, $xmlWriter);
 
         $xmlWriter->endElement();
     }
 
     /**
-     * @param Mixed $_product
+     * @param Mixed $product
      * @param XMLWriter $xmlWriter
      */
-    private function writeParentProductAttributes($_product, $xmlWriter)
+    private function writeParentProductAttributesXml($product, $xmlWriter)
     {
-        $xmlWriter->writeElement('g:title', $_product->getName());
-        $xmlWriter->writeElement('g:description', $this->getDescription($_product));
-        $xmlWriter->writeElement('g:link', $_product->getProductUrl());
+        $xmlWriter->writeElement('g:title', $this->getTitle($product));
+        $xmlWriter->writeElement('g:description', $this->getDescription($product));
+        $xmlWriter->writeElement('g:link', $this->getProductUrl($product));
 
         // replaced getAttributeText with safer option
         $attributeCode = 'manufacturer';
-        if ($_product->getData($attributeCode) !== null) {
-            $xmlWriter->writeElement('g:brand', $_product->getAttributeText($attributeCode));
+        if ($product->getData($attributeCode) !== null) {
+            $xmlWriter->writeElement('g:brand', $product->getAttributeText($attributeCode));
         }
 
         $xmlWriter->writeElement('g:condition', 'new');
-        // TODO add more attributes if needed.
-//        $xmlWriter->writeElement('g:size_system', 'uk');
-//        $xmlWriter->writeElement('g:age_group', 'adult');
-//        $xmlWriter->writeElement('g:identifier_exists', 'TRUE');
-//        $xmlWriter->writeElement('g:adult', $this->do_is_adult($_product));
     }
 
-//    /**
-//     * @param Mixed $_product
-//     * @return string
-//     */
-//    function do_is_adult($_product)
-//    {
-//        // TODO add decision if needed.
-////        switch ($_product->getAttributeText('familysafe')) {
-////            case 'No':
-////                $isadult = "FALSE";
-////            default:
-////                $isadult = "TRUE";
-////        }
-//        return ("FALSE");
-//    }
+    /**
+     * @param Mixed $product
+     * @param XMLWriter $xmlWriter
+     */
+    private function writeChildProductAttributesXml($product, $xmlWriter)
+    {
+        $xmlWriter->writeElement('g:image_link', $this->getImageUrl($product));
+
+        $xmlWriter->writeElement('g:mpn', $product->getSku());
+        if (strlen($product->getEan()) > 7) {
+            $xmlWriter->writeElement('g:gtin', $product->getEan());
+        }
+
+        $xmlWriter->writeElement('g:price', $this->getPrice($product));
+        $xmlWriter->writeElement('g:sale_price', $this->getSalePrice($product));
+        // replaced getAttributeText with safer option
+        $attributeCode = 'size';
+        if ($product->getData($attributeCode) !== null) {
+            $xmlWriter->writeElement('g:size', $product->getAttributeText($attributeCode));
+        }
+        // replaced getAttributeText with safer option
+        $attributeCode = 'color';
+        if ($product->getData($attributeCode) !== null) {
+            $xmlWriter->writeElement('g:color', $product->getAttributeText($attributeCode));
+        }
+        $xmlWriter->writeElement('g:availability', $this->doIsInStock($product));
+    }
+
+
+    /**
+     * @param Mixed $catCollection
+     * @param XMLWriter $xmlWriter
+     */
+    private function writeProductTypesXml($catCollection, $xmlWriter)
+    {
+        /** @var Mixed $category */
+        foreach ($catCollection as $category) {
+            $xmlWriter->writeElement('g:product_type', $category->getName());
+        }
+    }
+
+    /**
+     * @param Mixed $product
+     * @param XMLWriter $xmlWriter
+     */
+    private function writeConfigurableProductXml($product, $xmlWriter)
+    {
+        $catCollection = $this->getProductTypes($product);
+
+        $childProductArray = $product->getTypeInstance()->getUsedProducts($product);
+
+        foreach ($childProductArray as $childProduct) {
+            $xmlWriter->startElement('item');
+
+            // ID belongs to the child product's ID to make this product unique
+            $xmlWriter->writeElement('g:id', $this->getId($product, $childProduct));
+            $xmlWriter->writeElement('g:item_group_id', $this->getItemGroupId($product));
+            $xmlWriter->writeElement('g:display_ads_id', $this->getDisplayAdsId($product, $childProduct));
+
+            // process common attributes
+            $this->writeParentProductAttributesXml($product, $xmlWriter);
+            // process advanced attributes
+            $this->writeChildProductAttributesXml($childProduct, $xmlWriter);
+            // categories
+            $this->writeProductTypesXml($catCollection, $xmlWriter);
+
+            $xmlWriter->endElement();
+            $this->count++;
+        }
+    }
+
+
+    /**
+     * @param Mixed $product
+     * @param Mixed $childProduct
+     * @return string id
+     */
+    function getId($product, $childProduct = null)
+    {
+        if ($childProduct) {
+            return 'mag_' . $product->getId() . '_' . $childProduct->getId();
+        } else {
+            return 'mag_' . $product->getId();
+        }
+    }
+
+    /**
+     * @param Mixed $product
+     * @return string item_group_id
+     */
+    function getItemGroupId($product)
+    {
+        return 'mag_' . $product->getId();
+    }
+
+    /**
+     * @param Mixed $product
+     * @param Mixed $childProduct
+     * @return string display_ads_id
+     */
+    function getDisplayAdsId($product, $childProduct = null)
+    {
+        if ($childProduct) {
+            return 'mag_' . $product->getId() . '_' . $childProduct->getId();
+        } else {
+            return 'mag_' . $product->getId();
+        }
+    }
+
+    /**
+     * @param Mixed $product
+     * @return string title
+     */
+    function getTitle($product)
+    {
+        return $product->getName();
+    }
 
     /**
      * @param Mixed $product
@@ -350,6 +521,15 @@ class Cron
 
     /**
      * @param Mixed $product
+     * @return string price
+     */
+    function getProductUrl($product)
+    {
+        return $product->getProductUrl();
+    }
+
+    /**
+     * @param Mixed $product
      * @return string
      */
     private function getImageUrl($product)
@@ -360,32 +540,52 @@ class Cron
     }
 
     /**
-     * @param Mixed $_product
-     * @param XMLWriter $xmlWriter
+     * @return string currency code
      */
-    private function writeChildProductAttributes($_product, $xmlWriter)
+    function getCurrency()
     {
-        $xmlWriter->writeElement('g:image_link', $this->getImageUrl($_product));
+        return $currentCurrencyCode = $this->_storeManager->getStore()->getBaseCurrencyCode();
+    }
 
-//        $this->loggerMy->debug('gtin: ' . $_product->getEan());
-        $xmlWriter->writeElement('g:mpn', $_product->getSku());
-        if (strlen($_product->getEan()) > 7) {
-            $xmlWriter->writeElement('g:gtin', $_product->getEan());
+    /**
+     * @param Mixed $product
+     * @param bool $withCurrency
+     * @return string price
+     */
+    function getPrice($product, $withCurrency = false)
+    {
+        $price = $product->getPrice();
+        if ($withCurrency) {
+            $price = $price . ' ' . $this->getCurrency();
         }
+        return $price;
+    }
 
-        $xmlWriter->writeElement('g:price', $_product->getPrice());
-        $xmlWriter->writeElement('g:sale_price', $_product->getSpecialPrice());
-        // replaced getAttributeText with safer option
-        $attributeCode = 'size';
-        if ($_product->getData($attributeCode) !== null) {
-            $xmlWriter->writeElement('g:size', $_product->getAttributeText($attributeCode));
+    /**
+     * @param Mixed $product
+     * @param bool $withCurrency
+     * @return string salePrice
+     */
+    function getSalePrice($product, $withCurrency = false)
+    {
+        $salePrice = $product->getFinalPrice();
+        if ($salePrice && $withCurrency) {
+            $salePrice = $salePrice . ' ' . $this->getCurrency();
         }
-        // replaced getAttributeText with safer option
-        $attributeCode = 'color';
-        if ($_product->getData($attributeCode) !== null) {
-            $xmlWriter->writeElement('g:color', $_product->getAttributeText($attributeCode));
-        }
-        $xmlWriter->writeElement('g:availability', $this->doIsInStock($_product));
+        return $salePrice;
+    }
+
+
+    /**
+     * @param Mixed $_product
+     * @return mixed
+     */
+    private function getProductTypes($_product)
+    {
+        // SELECT name FROM category
+        // if I want to load more attributes, I need to select them first
+        // loading and selecting is processor intensive! Selecting more attributes will result in longer delay!
+        return $_product->getCategoryCollection()->addAttributeToSelect('name')->load();
     }
 
     /**
@@ -407,57 +607,4 @@ class Cron
         return $stockVal;
     }
 
-    /**
-     * @param Mixed $catCollection
-     * @param XMLWriter $xmlWriter
-     */
-    private function writeProductTypes($catCollection, $xmlWriter)
-    {
-        /** @var Mixed $category */
-        foreach ($catCollection as $category) {
-            $xmlWriter->writeElement('g:product_type', $category->getName());
-        }
-    }
-
-    /**
-     * @param Mixed $_product
-     * @return mixed
-     */
-    private function getProductTypes($_product)
-    {
-        // SELECT name FROM category
-        // if I want to load more attributes, I need to select them first
-        // loading and selecting is processor intensive! Selecting more attributes will result in longer delay!
-        return $_product->getCategoryCollection()->addAttributeToSelect('name')->load();
-    }
-
-    /**
-     * @param Mixed $_product
-     * @param XMLWriter $xmlWriter
-     */
-    private function writeConfigurableProduct($_product, $xmlWriter)
-    {
-        $_childProducts = $_product->getTypeInstance()->getUsedProducts($_product);
-        $catCollection = $this->getProductTypes($_product);
-
-
-        foreach ($_childProducts as $_childProduct) {
-            $xmlWriter->startElement('item');
-
-            // ID belongs to the child product's ID to make this product unique
-            $xmlWriter->writeElement('g:id', "mag_" . $_product->getId() . "_" . $_childProduct->getId());
-            $xmlWriter->writeElement('g:item_group_id', "mag_" . $_product->getId());
-            $xmlWriter->writeElement('g:display_ads_id', "mag_" . $_product->getId() . "_" . $_childProduct->getId());
-
-            // process common attributes
-            $this->writeParentProductAttributes($_product, $xmlWriter);
-            // process advanced attributes
-            $this->writeChildProductAttributes($_childProduct, $xmlWriter);
-            // categories
-            $this->writeProductTypes($catCollection, $xmlWriter);
-
-            $xmlWriter->endElement();
-            $this->count++;
-        }
-    }
 }

@@ -2,83 +2,89 @@
 
 <script>
     function iFrameLoad() {
-        var storeUrl = "<?php echo $block->getStoreBaseUrl(); ?>";
-        var storeName = "<?php echo $block->getStoreName(); ?>";
-        var storeCurrency = "<?php echo $block->getStoreCurrency(); ?>";
-        var storeLanguage = "<?php echo $block->getStoreLanguage(); ?>";
-        var storeCountry = "<?php echo $block->getStoreCountry(); ?>";
-        var magentoMode = "<?php echo $block->getDevelopmentMode(); ?>";
-        var pluginVersion = "magento2_" + "<?php echo $block->getPluginVersion(); ?>";
+        var storeUrl = '<?php echo $block->getStoreBaseUrl(); ?>';
+        var storeName = '<?php echo $block->getStoreName(); ?>';
+        var storeCurrency = '<?php echo $block->getStoreCurrency(); ?>';
+        var storeLanguage = '<?php echo $block->getStoreLanguage(); ?>';
+        var storeCountry = '<?php echo $block->getStoreCountry(); ?>';
+        var magentoMode = '<?php echo $block->getDevelopmentMode(); ?>';
+        var pluginVersion = 'magento2_' + '<?php echo $block->getPluginVersion(); ?>';
 
-        var customerId = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getCustomerId() : null); ?>";
-        var accessToken = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getAccessToken() : null); ?>";
-        var clientToken = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getClientToken() : null); ?>";
-        var managedMerchants = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getManagedMerchants() : null); ?>";
-        var adultOriented = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getAdultOriented() : null); ?>";
-        var status = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getStatus() : null); ?>";
-        var errors = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getErrors() : null); ?>";
-        var creationState = "<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getCreationState() : null); ?>";
+        var customerId = '<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getCustomerId() : null); ?>';
+        var accessToken = '<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getAccessToken() : null); ?>';
+        var clientToken = '<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getClientToken() : null); ?>';
+        var managedMerchants = '<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getManagedMerchants() : null); ?>';
+        var adultOriented = '<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getAdultOriented() : null); ?>';
+        var status = '<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getStatus() : null); ?>';
+        var errors = '<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getErrors() : null); ?>';
+        var creationState = '<?php echo($block->getMainItemEntry() ? $block->getMainItemEntry()->getCreationState() : null); ?>';
 
-        console.log("mode: " + magentoMode);
+        var stagingActive = false;
+        stagingActive = <?php echo json_encode($block->isStagingActive()); ?>;
+
+        console.log('mode: ' + magentoMode);
 
         // pass basic Magento data to iFrame
         var iFrame = document.getElementById('RoiHunterEasyIFrame');
         iFrame.contentWindow.postMessage({
-                "type": "roihunter_magento_plugin",
-                "storeUrl": storeUrl,
-                "storeName": storeName,
-                "storeCurrency": storeCurrency,
-                "storeLanguage": storeLanguage,
-                "storeCountry": storeCountry,
-                "storeMode": magentoMode,
-                "pluginVersion": pluginVersion,
+                'type': 'roihunter_magento_plugin',
+                'storeUrl': storeUrl,
+                'storeName': storeName,
+                'storeCurrency': storeCurrency,
+                'storeLanguage': storeLanguage,
+                'storeCountry': storeCountry,
+                'storeMode': magentoMode,
+                'pluginVersion': pluginVersion,
 
                 // Database part
-                "customerId": customerId,
-                "accessToken": accessToken,
-                "clientToken": clientToken,
-                "managedMerchants": managedMerchants,
-                "adultOriented": adultOriented,
-                "status": status,
-                "errors": errors,
-                "creationState": creationState
+                'customerId': customerId,
+                'accessToken': accessToken,
+                'clientToken': clientToken,
+                'managedMerchants': managedMerchants,
+                'adultOriented': adultOriented,
+                'status': status,
+                'errors': errors,
+                'creationState': creationState,
 
-//                ,"demoMode": true
-//                ,"checkUrl": "http://openshop.bfdev.cz/roihuntereasy/storedetails/checka"
-//                ,"intercomState":"hidden"
-//                    "feedUrl": "http://weird_feedUrl",
-//                    "callbackUrl": "http://weird_callbackUrl",
-//                    "stateUrl": "http://weird_stateUrl",E
+                'stagingActive': stagingActive
+
+                // TODO careful what goes to production
+//                ,'demoMode': true
+//                ,'checkUrl': 'http://openshop.bfdev.cz/roihuntereasy/storedetails/checka'
+//                ,'intercomState':'hidden'
+//                    'feedUrl': 'http://weird_feedUrl',
+//                    'callbackUrl': 'http://weird_callbackUrl',
+//                    'stateUrl': 'http://weird_stateUrl',E
 
             }, '*'
         );
 
         // Create IE + others compatible event handler
-        var eventMethod = window.addEventListener ? "addEventListener" : "attachEvent";
+        var eventMethod = window.addEventListener ? 'addEventListener' : 'attachEvent';
         var eventer = window[eventMethod];
-        var messageEvent = eventMethod == "attachEvent" ? "onmessage" : "message";
+        var messageEvent = eventMethod == 'attachEvent' ? 'onmessage' : 'message';
 
         // Listen to message from child window
         eventer(messageEvent, function (e) {
-            if (e.data.type === "roihunter_magento_plugin_height") {
+            if (e.data.type === 'roihunter_magento_plugin_height') {
 //            Change size of iFrame to correspond new height of content
-//            console.log("new height: " + e.data.height);
+//            console.log('new height: ' + e.data.height);
                 document.getElementById('RoiHunterEasyIFrame').style.height = e.data.height + 'px';
             } else {
-//            console.log("Unknown message event", e);
+//            console.log('Unknown message event', e);
             }
         }, false);
     }
 </script>
 
-<!--"http://localhost:3000"    "//magento.roihunter.com/" -->
-<iframe src="//magento.roihunter.com/"
-        id="RoiHunterEasyIFrame"
-        scrolling="yes"
-        frameBorder="0"
+<!--'http://localhost:3000' '<?php echo $block->getIFrameBaseUrl(); ?>' -->
+<iframe src='<?php echo $block->getIFrameBaseUrl(); ?>'
+        id='RoiHunterEasyIFrame'
+        scrolling='yes'
+        frameBorder='0'
         allowfullscreen
-        align="center"
-        onload="iFrameLoad()"
-        style="width: 100%; min-height: 500px">
+        align='center'
+        onload='iFrameLoad()'
+        style='width: 100%; min-height: 500px'>
     <p>Your browser does not support iFrames.</p>
 </iframe>

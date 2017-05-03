@@ -4,7 +4,7 @@
 
     <group id="default"> <!-- Doesn't need to be unique -->
         <job name="roi_hunter_easy_feed_generation" instance="BusinessFactory\RoiHunterEasy\Model\Cron" method="createFeed">
-            <schedule>*/10 * * * *</schedule>
+            <schedule>0 */2 * * *</schedule>
         </job>
     </group>
 
