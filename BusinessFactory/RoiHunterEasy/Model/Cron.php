@@ -134,6 +134,8 @@ class Cron
     {
         $dirPath = $this->filesystem->getDirectoryWrite(DirectoryList::VAR_DIR)->getAbsolutePath();
 
+        $this->loggerMy->info('Writing feeds to directory: ' . $dirPath . 'feeds/');
+
         // Create dir
         $this->fileMy->createDirectory($dirPath . 'feeds', 0775);
 
@@ -242,11 +244,11 @@ class Cron
 
         // select necessary attributes
         $collection->addAttributeToSelect('name');
-        $collection->addAttributeToSelect('shortDescription');
+        $collection->addAttributeToSelect('short_description');
         $collection->addAttributeToSelect('description');
         $collection->addAttributeToSelect('price');
-        $collection->addAttributeToSelect('specialPrice');
-        $collection->addAttributeToSelect('finalPrice');
+        $collection->addAttributeToSelect('special_price');
+        $collection->addAttributeToSelect('final_price');
         $collection->addAttributeToSelect('size');
         $collection->addAttributeToSelect('color');
         $collection->addAttributeToSelect('pattern');
@@ -568,7 +570,9 @@ class Cron
      */
     function getSalePrice($product, $withCurrency = false)
     {
-        $salePrice = $product->getFinalPrice();
+        $salePrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
+//        $salePrice = $salePrice . ". Final: " . $product->getFinalPrice() . ". Special: " . $product->getSpecialPrice();
+
         if ($salePrice && $withCurrency) {
             $salePrice = $salePrice . ' ' . $this->getCurrency();
         }
