@@ -556,7 +556,7 @@ class Cron
     }
 
     /**
-     * @return string currency code
+     * @return string formatted price
      */
     function getFormatHelper($price)
     {
