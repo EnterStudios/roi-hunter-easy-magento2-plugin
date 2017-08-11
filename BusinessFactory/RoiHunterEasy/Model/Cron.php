@@ -615,6 +615,7 @@ class Cron
         $salePrice = $this->getSalePrice($product);
 
         $formattedSalePrice = $this->getFormatHelper($salePrice);
+
         return $formattedSalePrice;
     }
 
