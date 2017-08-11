@@ -602,9 +602,6 @@ class Cron
     {
         $defaultPrice = $this->getPrice($product);
 
-        //$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of Object Manager
-        //$formattedPrice = $objectManager->create('Magento\Framework\Pricing\Helper\Data')->currency($defaultPrice, true, false);
-
         $formattedPrice = $this->getFormatHelper($defaultPrice);
 
         return $formattedPrice;
@@ -616,9 +613,6 @@ class Cron
     function getFormattedSalePrice($product)
     {
         $salePrice = $this->getSalePrice($product);
-
-        //$objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of Object Manager
-        //$formattedSalePrice = $objectManager->create('Magento\Framework\Pricing\Helper\Data')->currency($salePrice, true, false);
 
         $formattedSalePrice = $this->getFormatHelper($salePrice);
         return $formattedSalePrice;
