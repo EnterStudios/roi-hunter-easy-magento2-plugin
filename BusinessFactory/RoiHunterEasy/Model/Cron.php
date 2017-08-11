@@ -519,7 +519,7 @@ class Cron
             $description = $product->getDescription();
         }
 
-        $description = str_replace( ' ', ' ', strip_tags( str_replace( '</', ' </',$description ) ) );
+        $description = strip_tags( str_replace( '</', ' </',$description ) );
 
         return ($description);
     }
