@@ -4,11 +4,11 @@ namespace BusinessFactory\RoiHunterEasy\Controller\Cron;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
 use BusinessFactory\RoiHunterEasy\Model\Cron;
+use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
-use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
 
 class Index extends Action
 {
