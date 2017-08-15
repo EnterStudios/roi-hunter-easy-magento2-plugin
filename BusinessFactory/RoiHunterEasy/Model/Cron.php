@@ -299,7 +299,9 @@ class Cron
             'Image URL',
             'Item description',
             'Price',
-            'Sale price'
+            'Sale price',
+            "Formatted price",
+            "Formatted sale price"
         );
         // write headers to CSV file
         $this->fileMy->filePutCsv($csvFile, $csvHeader);
@@ -319,6 +321,8 @@ class Cron
             'Item description' => $this->getDescription($product),
             'Price' => $this->getPrice($product, true),
             'Sale price' => $this->getSalePrice($product, true),
+            "Formatted price" => $this->getFormattedPrice($product),
+            "Formatted sale price" => $this->getFormattedSalePrice($product)
         );
 
         // Write product to file
@@ -341,6 +345,8 @@ class Cron
                 'Item description' => $this->getDescription($product),
                 'Price' => $this->getPrice($childProduct, true),
                 'Sale price' => $this->getSalePrice($childProduct, true),
+                "Formatted price" => $this->getFormattedPrice($childProduct),
+                "Formatted sale price" => $this->getFormattedSalePrice($childProduct)
             );
 
             // Write product to file
@@ -553,17 +559,26 @@ class Cron
     }
 
     /**
+     * @return string formatted price
+     */
+    function getFormatHelper($price)
+    {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of Object Manager
+        return $formattedPrice = $objectManager->create('Magento\Framework\Pricing\Helper\Data')->currency($price, true, false);
+    }
+
+    /**
      * @param Mixed $product
      * @param bool $withCurrency
      * @return string price
      */
     function getPrice($product, $withCurrency = false)
     {
-        $price = $product->getPrice();
+        $defaultPrice = $product->getPrice();
         if ($withCurrency) {
-            $price = $price . ' ' . $this->getCurrency();
+            $defaultPrice = $defaultPrice . ' ' . $this->getCurrency();
         }
-        return $price;
+        return $defaultPrice;
     }
 
     /**
@@ -582,6 +597,30 @@ class Cron
         return $salePrice;
     }
 
+    /**
+     * @param Mixed $product
+     * @return string formatted price
+     */
+    function getFormattedPrice($product)
+    {
+        $defaultPrice = $this->getPrice($product);
+
+        $formattedPrice = $this->getFormatHelper($defaultPrice);
+
+        return $formattedPrice;
+    }
+    /**
+     * @param Mixed $product
+     * @return string formatted sale price
+     */
+    function getFormattedSalePrice($product)
+    {
+        $salePrice = $this->getSalePrice($product);
+
+        $formattedSalePrice = $this->getFormatHelper($salePrice);
+
+        return $formattedSalePrice;
+    }
 
     /**
      * @param Mixed $_product
