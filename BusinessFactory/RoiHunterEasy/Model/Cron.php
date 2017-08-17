@@ -86,12 +86,13 @@ class Cron
         $this->date = $date;
     }
 
-
     /**
      * Method start new feed creation process, if not another feed creation process running.
      */
     public function createFeed()
     {
+        ignore_user_abort(true);
+        set_time_limit(0);
         $this->loggerMy->info(__METHOD__ . ' cron');
         $path = $this->filesystem->getDirectoryWrite(DirectoryList::ROOT)->getAbsolutePath()
             . 'businessFactoryRoiHunterEasyFeedSign';
@@ -123,6 +124,68 @@ class Cron
             }
             return false;
         }
+    }
+
+
+    /**
+     * Method start new View creation process
+     */
+    public function createView($limit)
+    {
+        $this->loggerMy->info(__METHOD__ . ' cron');
+
+        try {
+            $previewArray = $this->generatePreview($limit);
+
+            return $previewArray;
+        } catch (\Exception $e) {
+            $this->loggerMy->info($e);
+
+            return false;
+        }
+    }
+
+    /**
+     * HTML generation function
+     *
+     * @throws \Magento\Framework\Exception\NotFoundException
+     */
+    private function generatePreview($limit)
+    {
+        // Prepare default store context
+        $stores = $this->_storeManager->getStores();
+        $this->loggerMy->info('Stores:', $stores);
+        $defaultStore = $this->_storeManager->getDefaultStoreView();
+        $this->loggerMy->info('DefStoreId: ' . $defaultStore->getId() . '. DefStoreName: ' . $defaultStore->getName());
+        $this->_storeManager->setCurrentStore($defaultStore);
+        $products = $this->getProductCollection($defaultStore, $limit);
+
+        $previewProducts = array();
+
+        // Cycle all products
+        foreach ($products as $product) {
+            $previewProducts[] = $this->writePreviewContent($product);
+        }
+
+        return $previewProducts;
+    }
+
+    /**
+     * @param $product
+     * @param resource $csvFile
+     */
+    private function writePreviewContent($product)
+    {
+
+        // HTML Content
+        $content = array();
+        $content[] = $this->getTitle($product);
+        $content[] = $this->getDescription($product);
+        $content[] = $this->getFormattedSalePrice($product);
+        $content[] = $this->getImageUrl($product);
+
+        // Return product to endpoint
+        return $content;
     }
 
     /**
@@ -238,7 +301,7 @@ class Cron
      * @param $store
      * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
      */
-    private function getProductCollection($store)
+    private function getProductCollection($store, $previewLimit=false)
     {
         $collection = $this->collectionFactory->create();
 
@@ -253,6 +316,13 @@ class Cron
         $collection->addAttributeToSelect('color');
         $collection->addAttributeToSelect('pattern');
         $collection->addAttributeToSelect('image');
+
+        // set limit to 6 first products
+        if ($previewLimit) {
+            $collection->setPageSize($previewLimit);
+            $collection->setCurPage(1);;
+            $collection->getSelect()->orderRand();
+        }
 
         // Allow only visible products
         $collection->addAttributeToFilter('status', ['in' => $this->productStatus->getVisibleStatusIds()]);
@@ -299,7 +369,9 @@ class Cron
             'Image URL',
             'Item description',
             'Price',
-            'Sale price'
+            'Sale price',
+            "Formatted price",
+            "Formatted sale price"
         );
         // write headers to CSV file
         $this->fileMy->filePutCsv($csvFile, $csvHeader);
@@ -319,6 +391,8 @@ class Cron
             'Item description' => $this->getDescription($product),
             'Price' => $this->getPrice($product, true),
             'Sale price' => $this->getSalePrice($product, true),
+            "Formatted price" => $this->getFormattedPrice($product),
+            "Formatted sale price" => $this->getFormattedSalePrice($product)
         );
 
         // Write product to file
@@ -341,6 +415,8 @@ class Cron
                 'Item description' => $this->getDescription($product),
                 'Price' => $this->getPrice($childProduct, true),
                 'Sale price' => $this->getSalePrice($childProduct, true),
+                "Formatted price" => $this->getFormattedPrice($childProduct),
+                "Formatted sale price" => $this->getFormattedSalePrice($childProduct)
             );
 
             // Write product to file
@@ -553,17 +629,26 @@ class Cron
     }
 
     /**
+     * @return string formatted price
+     */
+    function getFormatHelper($price)
+    {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of Object Manager
+        return $formattedPrice = $objectManager->create('Magento\Framework\Pricing\Helper\Data')->currency($price, true, false);
+    }
+
+    /**
      * @param Mixed $product
      * @param bool $withCurrency
      * @return string price
      */
     function getPrice($product, $withCurrency = false)
     {
-        $price = $product->getPrice();
+        $defaultPrice = $product->getPrice();
         if ($withCurrency) {
-            $price = $price . ' ' . $this->getCurrency();
+            $defaultPrice = $defaultPrice . ' ' . $this->getCurrency();
         }
-        return $price;
+        return $defaultPrice;
     }
 
     /**
@@ -582,6 +667,30 @@ class Cron
         return $salePrice;
     }
 
+    /**
+     * @param Mixed $product
+     * @return string formatted price
+     */
+    function getFormattedPrice($product)
+    {
+        $defaultPrice = $this->getPrice($product);
+
+        $formattedPrice = $this->getFormatHelper($defaultPrice);
+
+        return $formattedPrice;
+    }
+    /**
+     * @param Mixed $product
+     * @return string formatted sale price
+     */
+    function getFormattedSalePrice($product)
+    {
+        $salePrice = $this->getSalePrice($product);
+
+        $formattedSalePrice = $this->getFormatHelper($salePrice);
+
+        return $formattedSalePrice;
+    }
 
     /**
      * @param Mixed $_product
