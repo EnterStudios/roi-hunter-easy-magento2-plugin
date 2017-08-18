@@ -317,7 +317,7 @@ class Cron
         $collection->addAttributeToSelect('pattern');
         $collection->addAttributeToSelect('image');
 
-        // set limit to 6 first products
+        // pick random product with limit (default 3)
         if ($previewLimit) {
             $collection->setPageSize($previewLimit);
             $collection->setCurPage(1);;
