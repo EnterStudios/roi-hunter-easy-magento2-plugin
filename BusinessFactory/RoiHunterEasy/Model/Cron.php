@@ -320,7 +320,7 @@ class Cron
         // pick random product with limit (default 3)
         if ($previewLimit) {
             $collection->setPageSize($previewLimit);
-            $collection->setCurPage(1);;
+            $collection->setCurPage(1);
             $collection->getSelect()->orderRand();
         }
 
