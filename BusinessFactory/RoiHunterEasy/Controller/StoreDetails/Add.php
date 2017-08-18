@@ -3,7 +3,6 @@
 namespace BusinessFactory\RoiHunterEasy\Controller\StoreDetails;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
-use BusinessFactory\RoiHunterEasy\Model\Cron;
 use BusinessFactory\RoiHunterEasy\Model\MainItemFactory;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
@@ -28,12 +27,6 @@ class Add extends Action
      */
     private $loggerMy;
 
-    /**
-     * Custom cron instance for the initial feed
-     * @var Cron
-     */
-    private $cron;
-
     private $filesystem;
 
     /**
@@ -44,7 +37,6 @@ class Add extends Action
     public function __construct(
         Context $context,
         Logger $logger,
-        Cron $cron,
         JsonFactory $jsonResultFactory,
         StoreManagerInterface $storeManager,
         MainItemFactory $mainItemFactory,
@@ -54,7 +46,6 @@ class Add extends Action
         $this->jsonResultFactory = $jsonResultFactory;
         $this->storeManager = $storeManager;
         $this->loggerMy = $logger;
-        $this->cron = $cron;
         $this->mainItemFactory = $mainItemFactory;
         $this->filesystem = $filesystem;
 
@@ -148,18 +139,6 @@ class Add extends Action
                     $resultPage->setData('Not authorized');
                     $resultPage->setHttpResponseCode(403);
                     return;
-                }
-            }
-
-            // Create feed within first signup
-            if ($dataEntity->getClientToken() == null && $dataEntity->getAccessToken() == null) {
-                // log action HERE
-                $this->loggerMy->info('First signup. Let\'s generate first feed.');
-                $resultCode = $this->cron->createFeed();
-                if ($resultCode == true) {
-                    $resultPage->setData('Feeds generated.');
-                } else {
-                    $resultPage->setData('Feeds not generated. See logs for more info.');
                 }
             }
 
