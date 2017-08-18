@@ -99,7 +99,8 @@ class Preview extends Action
             $this->loggerMy->info('Preview generating started manually.');
             $resultPreviewArray = $this->cron->createView($limit);
             if ($resultPreviewArray == true) {
-                echo json_encode($resultPreviewArray); // $resultPage->setData() returns string. Use echo instead
+                $resultPage->setHeader('Content-type','application/json',true);
+                $resultPage->setData($resultPreviewArray);
             } else {
                 $resultPage->setData('Preview not generated. See logs for more info.');
             }
