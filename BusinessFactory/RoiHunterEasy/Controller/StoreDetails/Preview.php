@@ -79,21 +79,9 @@ class Preview extends Action
     private function processGET($resultPage)
     {
         try {
-            $authorizationHeader = $this->getRequest()->getHeader('X-Authorization');
-            $mainItemCollection = $this->mainItemFactory->create()->getCollection();
-
-            if ($mainItemCollection !== null && $mainItemCollection->count() > 0) {
-                $clientToken = $mainItemCollection->getLastItem()->getClientToken();
-                if ($clientToken !== null && $clientToken !== $authorizationHeader) {
-                    $resultPage->setData('Not authorized');
-                    $resultPage->setHttpResponseCode(403);
-                    return;
-                }
-            }
-
             $limit = $this->getRequest()->getParam('limit');
             if (!isset($limit) || trim($limit) === '') {
-                $limit = '3';
+                $limit = 3;
             }
 
             $this->loggerMy->info('Preview generating started manually.');
