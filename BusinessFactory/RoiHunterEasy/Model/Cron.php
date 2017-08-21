@@ -160,7 +160,7 @@ class Cron
         $this->_storeManager->setCurrentStore($defaultStore);
         $products = $this->getProductCollection($defaultStore, $limit);
 
-        $previewProducts = array();
+        $previewProducts = [];
 
         // Cycle all products
         foreach ($products as $product) {
@@ -178,7 +178,7 @@ class Cron
     {
 
         // HTML Content
-        $content = array();
+        $content = [];
         $content['Title'] = $this->getTitle($product);
         $content['Description'] = $this->getDescription($product);
         $content['Price'] = $this->getFormattedSalePrice($product);
