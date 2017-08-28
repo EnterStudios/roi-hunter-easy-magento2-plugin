@@ -164,7 +164,7 @@ class Cron
 
         // Cycle all products
         foreach ($products as $product) {
-            $previewProducts['Products'][] = $this->writePreviewContent($product);
+            $previewProducts['products'][] = $this->writePreviewContent($product);
         }
 
         return $previewProducts;
@@ -179,10 +179,10 @@ class Cron
 
         // HTML Content
         $content = [];
-        $content['Title'] = $this->getTitle($product);
-        $content['Description'] = $this->getDescription($product);
-        $content['Price'] = $this->getFormattedSalePrice($product);
-        $content['ImageUrl'] = $this->getImageUrl($product);
+        $content['title'] = $this->getTitle($product);
+        $content['description'] = $this->getDescription($product);
+        $content['price'] = $this->getFormattedSalePrice($product);
+        $content['imageUrl'] = $this->getImageUrl($product);
 
         // Return product to endpoint
         return $content;
