@@ -125,7 +125,7 @@ class Add extends Action
 
             $authorizationHeader = $request->getHeader('X-Authorization');
 
-//             Prepare database item. If table empty, then create new item.
+            // Prepare database item. If table empty, then create new item.
             $mainItemCollection = $this->mainItemFactory->create()->getCollection();
             if ($mainItemCollection->count() <= 0) {
                 $dataEntity = $this->mainItemFactory->create();
@@ -134,7 +134,7 @@ class Add extends Action
                 $dataEntity = $mainItemCollection->getLastItem();
                 $dataEntity->setDescription('Updated');
 
-//                    If data already exist check for client token.
+                // If data already exist check for client token.
                 if ($dataEntity->getClientToken() != null && $dataEntity->getClientToken() !== $authorizationHeader) {
                     $resultPage->setData('Not authorized');
                     $resultPage->setHttpResponseCode(403);

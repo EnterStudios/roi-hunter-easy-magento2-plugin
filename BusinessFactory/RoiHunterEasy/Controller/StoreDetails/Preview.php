@@ -1,6 +1,6 @@
 <?php
 
-namespace BusinessFactory\RoiHunterEasy\Controller\Cron;
+namespace BusinessFactory\RoiHunterEasy\Controller\StoreDetails;
 
 use BusinessFactory\RoiHunterEasy\Logger\Logger;
 use BusinessFactory\RoiHunterEasy\Model\Cron;
@@ -10,7 +10,7 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\Result\JsonFactory;
 
-class Index extends Action
+class Preview extends Action
 {
     /**
      * Custom logging instance
@@ -79,30 +79,24 @@ class Index extends Action
     private function processGET($resultPage)
     {
         try {
-            $authorizationHeader = $this->getRequest()->getHeader('X-Authorization');
-            $mainItemCollection = $this->mainItemFactory->create()->getCollection();
-
-            if ($mainItemCollection !== null && $mainItemCollection->count() > 0) {
-                $clientToken = $mainItemCollection->getLastItem()->getClientToken();
-                if ($clientToken !== null && $clientToken !== $authorizationHeader) {
-                    $resultPage->setData('Not authorized');
-                    $resultPage->setHttpResponseCode(403);
-                    return;
-                }
+            $limit = $this->getRequest()->getParam('limit');
+            if (!isset($limit) || trim($limit) === '') {
+                $limit = 3;
             }
 
-            $this->loggerMy->info('Cron generating started manually.');
-            $resultCode = $this->cron->createFeed();
-            if ($resultCode == true) {
-                $resultPage->setData('Feeds generated.');
+            $this->loggerMy->info('Preview generating started manually.');
+            $resultPreviewArray = $this->cron->createView($limit);
+            if ($resultPreviewArray == true) {
+                $resultPage->setHeader('Content-type','application/json',true);
+                $resultPage->setData($resultPreviewArray);
             } else {
-                $resultPage->setData('Feeds not generated. See logs for more info.');
+                $resultPage->setData('Preview not generated. See logs for more info.');
             }
         } catch (\Exception $exception) {
             $this->loggerMy->info($exception);
             $this->loggerMy->info($this->getRequest());
             $resultPage->setHttpResponseCode(500);
-            $resultPage->setData('Feeds generation failed.');
+            $resultPage->setData('Preview generation failed.');
         }
     }
 }

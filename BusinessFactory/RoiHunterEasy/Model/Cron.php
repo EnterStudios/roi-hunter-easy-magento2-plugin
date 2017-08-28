@@ -86,12 +86,13 @@ class Cron
         $this->date = $date;
     }
 
-
     /**
      * Method start new feed creation process, if not another feed creation process running.
      */
     public function createFeed()
     {
+        ignore_user_abort(true);
+        set_time_limit(0);
         $this->loggerMy->info(__METHOD__ . ' cron');
         $path = $this->filesystem->getDirectoryWrite(DirectoryList::ROOT)->getAbsolutePath()
             . 'businessFactoryRoiHunterEasyFeedSign';
@@ -123,6 +124,68 @@ class Cron
             }
             return false;
         }
+    }
+
+
+    /**
+     * Method start new View creation process
+     */
+    public function createView($limit)
+    {
+        $this->loggerMy->info(__METHOD__ . ' cron');
+
+        try {
+            $previewArray = $this->generatePreview($limit);
+
+            return $previewArray;
+        } catch (\Exception $e) {
+            $this->loggerMy->info($e);
+
+            return false;
+        }
+    }
+
+    /**
+     * HTML generation function
+     *
+     * @throws \Magento\Framework\Exception\NotFoundException
+     */
+    private function generatePreview($limit)
+    {
+        // Prepare default store context
+        $stores = $this->_storeManager->getStores();
+        $this->loggerMy->info('Stores:', $stores);
+        $defaultStore = $this->_storeManager->getDefaultStoreView();
+        $this->loggerMy->info('DefStoreId: ' . $defaultStore->getId() . '. DefStoreName: ' . $defaultStore->getName());
+        $this->_storeManager->setCurrentStore($defaultStore);
+        $products = $this->getProductCollection($defaultStore, $limit);
+
+        $previewProducts = [];
+
+        // Cycle all products
+        foreach ($products as $product) {
+            $previewProducts['products'][] = $this->writePreviewContent($product);
+        }
+
+        return $previewProducts;
+    }
+
+    /**
+     * @param $product
+     * @param resource $csvFile
+     */
+    private function writePreviewContent($product)
+    {
+
+        // HTML Content
+        $content = [];
+        $content['title'] = $this->getTitle($product);
+        $content['description'] = $this->getDescription($product);
+        $content['price'] = $this->getFormattedSalePrice($product);
+        $content['imageUrl'] = $this->getImageUrl($product);
+
+        // Return product to endpoint
+        return $content;
     }
 
     /**
@@ -238,7 +301,7 @@ class Cron
      * @param $store
      * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
      */
-    private function getProductCollection($store)
+    private function getProductCollection($store, $previewLimit=false)
     {
         $collection = $this->collectionFactory->create();
 
@@ -253,6 +316,13 @@ class Cron
         $collection->addAttributeToSelect('color');
         $collection->addAttributeToSelect('pattern');
         $collection->addAttributeToSelect('image');
+
+        // Pick random product with limit (default 3)
+        if ($previewLimit) {
+            $collection->setPageSize($previewLimit);
+            $collection->setCurPage(1);
+            $collection->getSelect()->orderRand();
+        }
 
         // Allow only visible products
         $collection->addAttributeToFilter('status', ['in' => $this->productStatus->getVisibleStatusIds()]);
