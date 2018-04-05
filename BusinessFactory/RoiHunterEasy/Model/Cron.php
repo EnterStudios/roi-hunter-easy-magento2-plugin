@@ -369,9 +369,9 @@ class Cron
             'Image URL',
             'Item description',
             'Price',
-            'Sale price',
-            "Formatted price",
-            "Formatted sale price"
+            'Sale price'
+						//"Formatted price",
+            //"Formatted sale price"
         );
         // write headers to CSV file
         $this->fileMy->filePutCsv($csvFile, $csvHeader);
@@ -390,9 +390,9 @@ class Cron
             'Image URL' => $this->getImageUrl($product),
             'Item description' => $this->getDescription($product),
             'Price' => $this->getPrice($product, true),
-            'Sale price' => $this->getSalePrice($product, true),
-            "Formatted price" => $this->getFormattedPrice($product),
-            "Formatted sale price" => $this->getFormattedSalePrice($product)
+            'Sale price' => $this->getSalePrice($product, true)
+            //"Formatted price" => $this->getFormattedPrice($product),
+            //"Formatted sale price" => $this->getFormattedSalePrice($product)
         );
 
         // Write product to file
@@ -414,9 +414,9 @@ class Cron
                 'Image URL' => $this->getImageUrl($childProduct),
                 'Item description' => $this->getDescription($product),
                 'Price' => $this->getPrice($childProduct, true),
-                'Sale price' => $this->getSalePrice($childProduct, true),
-                "Formatted price" => $this->getFormattedPrice($childProduct),
-                "Formatted sale price" => $this->getFormattedSalePrice($childProduct)
+                'Sale price' => $this->getSalePrice($childProduct, true)
+                //"Formatted price" => $this->getFormattedPrice($childProduct),
+                //"Formatted sale price" => $this->getFormattedSalePrice($childProduct)
             );
 
             // Write product to file
